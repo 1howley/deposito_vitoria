@@ -5,7 +5,7 @@ import { routes } from "./routes.js";
 const server = Fastify({ logger: true });
 
 const startServer = async () => {
-    await server.register(cors)
+    await server.register(cors);
     await server.register(routes);
 
     try {
