@@ -14,7 +14,7 @@ class UserService {
             data: {
                 email,
                 password,
-                name,
+                name: name || "",
                 role
             }
         })

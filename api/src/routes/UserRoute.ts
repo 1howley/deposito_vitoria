@@ -15,14 +15,14 @@ export const UserRoute = async (
     fastify.get(
         "/",
         async (request: FastifyRequest, reply: FastifyReply) => {
-            return userController.listAllUsers;
+            return userController.listAllUsers(request, reply);
         }
     );
 
     fastify.post(
         "/",
         async (request: FastifyRequest, reply: FastifyReply) => {
-            return userController.createUser;
+            return userController.createUser(request, reply);
         }
     );
 };
