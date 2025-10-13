@@ -25,11 +25,11 @@ export function ShoppingCart({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-lg flex flex-col">
-        <SheetHeader className="pb-4">
-          <SheetTitle className="flex items-center justify-between text-base md:text-lg">
+         <SheetHeader className="pb-4">
+          <SheetTitle className="text-base md:text-lg">
             Carrinho de Compras
-            <Badge variant="secondary" className="text-xs">{totalItems} itens</Badge>
           </SheetTitle>
+          <Badge variant="secondary" className="text-xs w-fit mt-2">{totalItems} itens</Badge>
         </SheetHeader>
 
         <div className="flex-1 flex flex-col min-h-0">

@@ -1,6 +1,7 @@
 import { Phone, MapPin, Clock, Mail, Facebook, Instagram, MessageCircle } from "lucide-react";
 import { Button } from "../atoms/button";
 import { Separator } from "../atoms/separator";
+import {SocialButtons} from "../molecules/SocialButtons";
 
 export function Footer() {
   return (
@@ -14,17 +15,8 @@ export function Footer() {
               Sua loja de materiais de construção de confiança em Cajuru.
               Qualidade e tradição há mais de 20 anos.
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <MessageCircle className="h-4 w-4" />
-              </Button>
-            </div>
+
+            <SocialButtons />
           </div>
 
           {/* Contact Info */}
@@ -33,11 +25,11 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>(41) 3234-5678</span>
+                <span>(37) 3244-1647</span>
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-primary" />
-                <span>(41) 99999-8888</span>
+                <span>(37) 99820-3602</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
@@ -53,9 +45,9 @@ export function Footer() {
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-primary mt-1" />
                 <div>
-                  <p>Rua das Construções, 123</p>
-                  <p>Cajuru - Curitiba, PR</p>
-                  <p>CEP: 82900-000</p>
+                  <p>Alameda dos Lírios, 332</p>
+                  <p>Carmo do Cajuru - Minas Gerais, MG</p>
+                  <p>CEP: 35557-000</p>
                 </div>
               </div>
             </div>
@@ -74,7 +66,7 @@ export function Footer() {
               </div>
               <div className="ml-6">
                 <p className="font-medium">Sábado</p>
-                <p className="text-sm text-muted-foreground">8:00 às 16:00</p>
+                <p className="text-sm text-muted-foreground">8:00 às 12:00</p>
               </div>
               <div className="ml-6">
                 <p className="font-medium">Domingo</p>
@@ -106,3 +98,5 @@ export function Footer() {
     </footer>
   );
 }
+
+export default Footer;
