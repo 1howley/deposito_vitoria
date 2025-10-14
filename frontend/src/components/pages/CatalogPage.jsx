@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { ProductCard } from "../molecules/ProductCard"; // O tipo 'Product' e caminho foram ajustados
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
@@ -10,14 +11,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../atoms/select";
-import { Search, Filter, Grid, List, ArrowLeft } from "lucide-react";
+import { Search, Grid, List, ArrowLeft } from "lucide-react";
 
-export function CatalogPage({ products, categories, onAddToCart, onBack }) {
+export function CatalogPage({ products, categories, onAddToCart }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
     const [viewMode, setViewMode] = useState("grid");
-
+    // Use o hook para navegação
+    const navigate = useNavigate();
     // Filter and sort products
     const filteredProducts = products
         .filter((product) => {
@@ -61,7 +63,7 @@ export function CatalogPage({ products, categories, onAddToCart, onBack }) {
                     <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
                         <Button
                             variant="ghost"
-                            onClick={onBack}
+                            onClick={() => navigate(-1)}
                             className="flex items-center gap-2 shrink-0"
                         >
                             <ArrowLeft className="w-4 h-4" />

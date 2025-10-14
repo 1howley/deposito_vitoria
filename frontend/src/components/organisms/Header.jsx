@@ -1,10 +1,11 @@
 import { ShoppingCart, Menu, Search, Crown, X } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
 import { useState } from "react";
 
-export function Header({ cartCount, onCartClick, onCatalogClick }) {
+export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
@@ -88,46 +89,23 @@ export function Header({ cartCount, onCartClick, onCatalogClick }) {
                 <nav className="mt-6 hidden md:block">
                     <div className="flex justify-center">
                         <ul className="flex space-x-12 bg-muted/20 rounded-full px-8 py-3">
-                            <li>
-                                <button
-                                    onClick={onCatalogClick}
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                >
+                            <Link to="catalog">
+                                <button className="text-foreground hover:text-primary transition-colors font-medium">
                                     Catálogo
                                 </button>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                >
-                                    Ofertas
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                >
-                                    Materiais Básicos
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                >
-                                    Ferramentas
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                >
-                                    Tintas
-                                </a>
-                            </li>
+                            </Link>
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                                Ofertas
+                            </Link>
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                                Materiais Básicos
+                            </Link>
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                                Ferramentas
+                            </Link>
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                                Tintas
+                            </Link>
                         </ul>
                     </div>
                 </nav>
