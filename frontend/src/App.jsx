@@ -23,7 +23,7 @@ export default function App() {
             image: "https://images.unsplash.com/photo-1635789145651-d5770bc33039?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBtYXRlcmlhbHMlMjBjZW1lbnQlMjBicmlja3N8ZW58MXx8fHwxNzU4OTg1MjY1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
             description: "Cimento, areia, brita, blocos e tijolos",
             productCount: 45,
-            isPopular: true
+            isPopular: true,
         },
         // ...resto das categorias
     ];
@@ -34,13 +34,13 @@ export default function App() {
         {
             id: "1",
             name: "Cimento Portland CP-V-ARI 50kg",
-            price: 38.90,
-            originalPrice: 45.90,
+            price: 38.9,
+            originalPrice: 45.9,
             image: "https://images.unsplash.com/photo-1635789145651-d5770bc33039?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25zdHJ1Y3Rpb24lMjBtYXRlcmlhbHMlMjBjZW1lbnQlMjBicmlja3N8ZW58MXx8fHwxNzU4OTg1MjY1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
             category: "Materiais Básicos",
             description: "Cimento de alta resistência inicial para estruturas",
             inStock: true,
-            rating: 4.9
+            rating: 4.9,
         },
         // ...resto dos produtos
     ];
@@ -49,11 +49,11 @@ export default function App() {
     const featuredProducts = allProducts.slice(0, 6);
 
     const addToCart = (product) => {
-        setCartItems(prev => {
-            const existingItem = prev.find(item => item.id === product.id);
+        setCartItems((prev) => {
+            const existingItem = prev.find((item) => item.id === product.id);
             if (existingItem) {
                 toast.success(`Quantidade atualizada: ${product.name}`);
-                return prev.map(item =>
+                return prev.map((item) =>
                     item.id === product.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
@@ -71,15 +71,13 @@ export default function App() {
             return;
         }
 
-        setCartItems(prev =>
-            prev.map(item =>
-                item.id === id ? { ...item, quantity } : item
-            )
+        setCartItems((prev) =>
+            prev.map((item) => (item.id === id ? { ...item, quantity } : item))
         );
     };
 
     const removeFromCart = (id) => {
-        setCartItems(prev => prev.filter(item => item.id !== id));
+        setCartItems((prev) => prev.filter((item) => item.id !== id));
         toast.success("Item removido do carrinho");
     };
 
@@ -93,7 +91,9 @@ export default function App() {
 
     const scrollToProducts = () => {
         if (currentPage === "home") {
-            document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+            document
+                .getElementById("products")
+                ?.scrollIntoView({ behavior: "smooth" });
         } else {
             setCurrentPage("catalog");
         }
@@ -145,16 +145,18 @@ export default function App() {
                     <div className="container mx-auto px-4">
                         <div className="text-center mb-12 md:mb-16">
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6">
-                                Produtos em <span className="text-primary">Destaque</span>
+                                Produtos em{" "}
+                                <span className="text-primary">Destaque</span>
                             </h2>
                             <p className="text-muted-foreground max-w-3xl mx-auto text-base md:text-lg leading-relaxed px-4">
-                                Confira nossa seleção de produtos mais vendidos com qualidade garantida
-                                e os melhores preços para sua obra.
+                                Confira nossa seleção de produtos mais vendidos
+                                com qualidade garantida e os melhores preços
+                                para sua obra.
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                            {featuredProducts.map(product => (
+                            {featuredProducts.map((product) => (
                                 <ProductCard
                                     key={product.id}
                                     product={product}
