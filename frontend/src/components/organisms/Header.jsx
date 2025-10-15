@@ -40,6 +40,15 @@ export function Header({ cartCount, onCartClick }) {
 
                     {/* Cart and Menu */}
                     <div className="flex items-center gap-2">
+                        <Link to="login">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="hidden md:flex h-10 md:h-12 px-3 md:px-6 rounded-full"
+                            >
+                                <span>Entrar</span>
+                            </Button>
+                        </Link>
                         <Button
                             onClick={onCartClick}
                             size="sm"
@@ -118,7 +127,6 @@ export function Header({ cartCount, onCartClick }) {
                                 <li>
                                     <button
                                         onClick={() => {
-                                            onCatalogClick?.();
                                             setIsMobileMenuOpen(false);
                                         }}
                                         className="w-full text-left py-2 px-3 text-foreground hover:text-primary transition-colors font-medium rounded-lg hover:bg-white/50"

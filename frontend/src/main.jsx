@@ -2,9 +2,10 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { Layout } from "./components/organisms/Layout";
 import "./index.css";
+import "./util/globals.css";
 import { Dashboard } from "./components/pages/Dashboard";
 import { CatalogPage } from "./components/pages/CatalogPage";
-import LoginPage from "./components/pages/login/LoginPage";
+import { LoginPage } from "./components/pages/login/LoginPage";
 // Mock data para categorias
 const categories = [
     {
@@ -64,7 +65,7 @@ createRoot(document.getElementById("root")).render(
                 />
                 {/* Adicione outras rotas aqui, ex: <Route path="product/:id" element={<ProductDetails />} /> */}
             </Route>
-            <Route path="login" element={ <LoginPage /> }/>
+            <Route path="login" element={<LoginPage />} />
         </Routes>
     </BrowserRouter>
 );
