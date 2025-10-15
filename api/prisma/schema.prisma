@@ -13,173 +13,188 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Cliente {
-  id_cliente    Int        @id @default(autoincrement())
-  nome          String?    @db.VarChar(255)
-  email         String     @unique @db.VarChar(255)
-  senha         String     @db.VarChar(255)
-  telefone      String?    @db.VarChar(15)
-  data_cadastro DateTime   @default(now()) @map("data_cadastro")
+model User {
+  userId    Int      @id @default(autoincrement())
+  email     String
+  password  String
+  name      String?
+  role      Role     @default(CUSTOMER)
 
-  // Relacionamentos
-  enderecos     Endereco[]
-  carrinho      Carrinho?
-  pedidos       Pedido[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("cliente_tb")
+  Order Order[]
+  Cart Cart[]
+  Address Address[]
+
+  @@map("users")
 }
 
-model Produto {
-  id_produto    Int             @id @default(autoincrement())
-  nome          String          @db.VarChar(255)
-  descricao     String?         @db.Text
-  preco_base    Decimal         @db.Decimal(10, 2)
-  estoque       Int
-  marca         String?         @db.VarChar(100)
-  categoria     String?         @db.VarChar(100)
+enum Role {
+  CUSTOMER
+  ADMIN
+}
 
-  // Relacionamentos
-  itensCarrinho ItemCarrinho[]
-  itensPedido   ItemPedido[]
+model Product {
+  productId    Int        @id @default(autoincrement())
+  name         String     @db.VarChar(255)
+  description  String?    @db.Text
+  basePrice    Decimal    @db.Decimal(10, 2)
+  stock        Int
+  brand        String?    @db.VarChar(100)
+  category     String?    @db.VarChar(100)
+
+  // Relations
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("produto_tb")
 }
 
-model Endereco {
-  id_endereco   Int            @id @default(autoincrement())
-  id_cliente    Int
-  cep           String         @db.VarChar(9)
-  rua           String         @db.VarChar(255)
-  numero        String         @db.VarChar(10)
-  bairro        String         @db.VarChar(255)
-  complemento   String?        @db.VarChar(100)
-  tipo          TipoEndereco
+model Address {
+  addressId   Int          @id @default(autoincrement())
+  clientId    Int
+  zipCode     String       @db.VarChar(9)
+  street      String       @db.VarChar(255)
+  number      String       @db.VarChar(10)
+  neighborhood String      @db.VarChar(255)
+  complement  String?      @db.VarChar(100)
+  type        AddressType
 
-  // Chaves estrangeiras
-  cliente       Cliente        @relation(fields: [id_cliente], references: [id_cliente])
+  // Foreign keys
+  user        User         @relation(fields: [clientId], references: [userId])
 
-  pedidos       Pedido[]       @relation("EntregaPedido") 
-  entregas      Entrega[]      
+  orders      Order[]      @relation("DeliveryOrder")
+  deliveries  Delivery[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("endereco_tb")
 }
 
-enum TipoEndereco {
-  ENTREGA
-  FATURAMENTO
+enum AddressType {
+  DELIVERY
+  BILLING
 }
 
-model Carrinho {
-  id_carrinho   Int            @id @default(autoincrement())
-  id_cliente    Int            @unique 
-  data_criacao  DateTime       @default(now()) @map("data_criacao")
-  status        String        
+model Cart {
+  cartId      Int       @id @default(autoincrement())
+  clientId    Int       @unique
+  createdAt   DateTime  @default(now()) @map("data_criacao")
+  status      String
 
-  // Chaves estrangeiras
-  cliente       Cliente        @relation(fields: [id_cliente], references: [id_cliente])
+  user        User         @relation(fields: [clientId], references: [userId])
+  items       CartItem[]
 
-  // Relacionamentos
-  itens         ItemCarrinho[]
+  updatedAt DateTime @updatedAt
 
   @@map("carrinho_tb")
 }
 
-model ItemCarrinho {
-  id_carrinho       Int
-  id_produto        Int
-  quantidade        Int
-  preco_unitario    Decimal         @db.Decimal(10, 2) @map("preco_unitario")
+model CartItem {
+  cartId       Int
+  productId    Int
+  quantity     Int
+  unitPrice    Decimal   @db.Decimal(10, 2) @map("preco_unitario")
 
-  // Chaves estrangeiras
-  carrinho          Carrinho        @relation(fields: [id_carrinho], references: [id_carrinho])
-  produto           Produto         @relation(fields: [id_produto], references: [id_produto])
+  cart         Cart      @relation(fields: [cartId], references: [cartId])
+  product      Product   @relation(fields: [productId], references: [productId])
 
-  @@id([id_carrinho, id_produto])
+  @@id([cartId, productId])
   @@map("item_carrinho_tb")
 }
 
-model Pagamento {
-  id_pagamento    Int             @id @default(autoincrement())
-  forma_pagamento String          @db.VarChar(50) @map("forma_pagamento")
-  status          StatusPagamento 
-  valor_pago      Decimal         @db.Decimal(10, 2) @map("valor_pago")
-  data_pagamento  DateTime        @default(now()) @map("data_pagamento")
+model Payment {
+  paymentId    Int            @id @default(autoincrement())
+  method       String         @db.VarChar(50) @map("forma_pagamento")
+  status       PaymentStatus
+  amountPaid   Decimal        @db.Decimal(10, 2) @map("valor_pago")
+  paidAt       DateTime       @default(now()) @map("data_pagamento")
 
-  pedido          Pedido?
+  order        Order?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("pagamento_tb")
 }
 
-enum StatusPagamento {
-  PENDENTE
-  APROVADO
-  RECUSADO
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
 }
 
-model Pedido {
-  id_pedido             Int          @id @default(autoincrement())
-  id_cliente            Int
-  id_endereco_entrega   Int          @map("id_endereco_entrega") 
-  id_pagamento          Int          @unique 
-  data_pedido           DateTime     @default(now()) @map("data_pedido")
-  valor_total           Decimal      @db.Decimal(10, 2) @map("valor_total")
-  status_pedido         StatusPedido @map("status_pedido")
+model Order {
+  orderId          Int          @id @default(autoincrement())
+  clientId         Int
+  deliveryAddressId Int         @map("id_endereco_entrega")
+  paymentId        Int          @unique
+  orderedAt        DateTime     @default(now()) @map("data_pedido")
+  totalAmount      Decimal      @db.Decimal(10, 2) @map("valor_total")
+  status           OrderStatus  @map("status_pedido")
 
-  // Chaves estrangeiras
-  cliente               Cliente      @relation(fields: [id_cliente], references: [id_cliente])
-  endereco_entrega      Endereco     @relation("EntregaPedido", fields: [id_endereco_entrega], references: [id_endereco])
-  pagamento             Pagamento    @relation(fields: [id_pagamento], references: [id_pagamento])
+  user             User         @relation(fields: [clientId], references: [userId])
+  deliveryAddress  Address      @relation("DeliveryOrder", fields: [deliveryAddressId], references: [addressId])
+  payment          Payment      @relation(fields: [paymentId], references: [paymentId])
 
-  // Relacionamentos
-  itens                 ItemPedido[]
-  entrega               Entrega? 
+  items            OrderItem[]
+  delivery         Delivery?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("pedido_tb")
 }
 
-enum StatusPedido {
-  PENDENTE
-  PAGO
-  EM_PROCESSAMENTO
-  ENVIADO
-  ENTREGUE
-  CANCELADO
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }
 
-model ItemPedido {
-  id_pedido             Int
-  id_produto            Int
-  quantidade            Int
-  preco_unitario_pago   Decimal         @db.Decimal(10, 2) @map("preco_unitario_pago")
+model OrderItem {
+  orderId      Int
+  productId    Int
+  quantity     Int
+  paidUnitPrice Decimal   @db.Decimal(10, 2) @map("preco_unitario_pago")
 
-  // Chaves estrangeiras
-  pedido                Pedido          @relation(fields: [id_pedido], references: [id_pedido])
-  produto               Produto         @relation(fields: [id_produto], references: [id_produto])
+  order        Order     @relation(fields: [orderId], references: [orderId])
+  product      Product   @relation(fields: [productId], references: [productId])
 
-  @@id([id_pedido, id_produto])
+  @@id([orderId, productId])
   @@map("item_pedido_tb")
 }
 
-model Entrega {
-  id_entrega      Int             @id @default(autoincrement())
-  id_pedido       Int             @unique 
-  id_endereco     Int            
-  tipo_envio      String          @map("tipo_envio")
-  data_prevista   DateTime?       @map("data_prevista")
-  data_envio      DateTime?       @map("data_envio")
-  status_entrega  StatusEntrega   @map("status_entrega")
-  rastreio        String?         @db.VarChar(50)
+model Delivery {
+  deliveryId    Int          @id @default(autoincrement())
+  orderId       Int          @unique
+  addressId     Int
+  shippingType  String       @map("tipo_envio")
+  expectedAt    DateTime?    @map("data_prevista")
+  shippedAt     DateTime?    @map("data_envio")
+  status        DeliveryStatus @map("status_entrega")
+  trackingCode  String?      @db.VarChar(50)
 
-  // Chaves estrangeiras
-  pedido          Pedido          @relation(fields: [id_pedido], references: [id_pedido])
-  endereco        Endereco        @relation(fields: [id_endereco], references: [id_endereco])
+  order         Order        @relation(fields: [orderId], references: [orderId])
+  address       Address      @relation(fields: [addressId], references: [addressId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("entrega_tb")
 }
 
-enum StatusEntrega {
-  SEPARACAO
-  EM_TRANSITO
-  ENTREGUE
-  ATRASADO
+enum DeliveryStatus {
+  PICKING
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
 }
