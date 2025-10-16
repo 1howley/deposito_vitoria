@@ -98,12 +98,16 @@ export function Header({ cartCount, onCartClick }) {
                 <nav className="mt-6 hidden md:block">
                     <div className="flex justify-center">
                         <ul className="flex space-x-12 bg-muted/20 rounded-full px-8 py-3">
-                            <Link to="catalog">
-                                <button className="text-foreground hover:text-primary transition-colors font-medium">
-                                    Catálogo
-                                </button>
+                            <Link
+                                className="text-foreground hover:text-primary transition-colors font-medium"
+                                to="catalog"
+                            >
+                                Catálogo
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                            <Link
+                                className="text-foreground hover:text-primary transition-colors font-medium"
+                                to="sale"
+                            >
                                 Ofertas
                             </Link>
                             <Link className="text-foreground hover:text-primary transition-colors font-medium">

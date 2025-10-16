@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { ArrowLeft, Mail, Lock, User, Chrome } from "lucide-react";
-import { Button } from "../../atoms/button";
-import { Input } from "../../atoms/input";
-import { Label } from "../../atoms/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../atoms/tabs";
+import { Button } from "../atoms/button";
+import { Input } from "../atoms/input";
+import { Label } from "../atoms/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../atoms/tabs";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "../../atoms/card";
-import { Separator } from "../../atoms/separator";
+} from "../atoms/card";
+import { Separator } from "../atoms/separator";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 
