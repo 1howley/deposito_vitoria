@@ -113,8 +113,8 @@ export function LoginPage() {
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 py-8 md:py-12">
-                <div className="max-w-md mx-auto">
+            <div className="container mx-auto px-4 py-8 md:py-12 flex">
+                <div className="max-w-sm mx-auto">
                     {/* Logo/Brand */}
                     <div className="text-center mb-8">
                         <div className="inline-block p-4 bg-primary rounded-2xl mb-4 shadow-lg">

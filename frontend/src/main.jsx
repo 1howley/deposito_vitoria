@@ -2,7 +2,6 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { Layout } from "./components/organisms/Layout";
 import "./index.css";
-import "./util/globals.css";
 import { Dashboard } from "./components/pages/Dashboard";
 import { CatalogPage } from "./components/pages/CatalogPage";
 import { LoginPage } from "./components/pages/login/LoginPage";
