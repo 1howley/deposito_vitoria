@@ -105,7 +105,7 @@ export function LoginPage() {
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-40 shadow-sm">
                 <div className="container mx-auto px-4 py-4">
-                    <Button variant="ghost">
+                    <Button variant="ghost" onClick={() => navigate(-1)}>
                         <ArrowLeft className="w-4 h-4" />
                         <span className="hidden sm:inline">Voltar</span>
                     </Button>
@@ -390,11 +390,12 @@ export function LoginPage() {
                             </Tabs>
 
                             {/* Separator */}
-                            <div className="relative my-6">
-                                <Separator />
-                                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-sm text-muted-foreground">
+                            <div className="my-6 flex items-center gap-3">
+                                <Separator aria-hidden="true" className="flex-1" />
+                                <span className="px-2 text-sm text-muted-foreground bg-card">
                                     ou continue com
                                 </span>
+                                <Separator aria-hidden="true" className="flex-1" />
                             </div>
 
                             {/* Google Button */}
