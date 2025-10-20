@@ -9,7 +9,7 @@ const mockProducts = [
     {
         id: 1,
         imageUrl: "https://via.placeholder.com/300", // Substitua pela URL da sua imagem
-        name: "Produto Incrível 1",
+        name: "Brita",
         description:
             "Uma breve descrição que destaca os benefícios deste produto.",
         price: 199.9,
@@ -18,7 +18,7 @@ const mockProducts = [
     {
         id: 2,
         imageUrl: "https://via.placeholder.com/300", // Substitua pela URL da sua imagem
-        name: "Produto Fantástico 2",
+        name: "Areia",
         description:
             "Ideal para resolver o seu problema X com muita eficiência.",
         price: 249.5,

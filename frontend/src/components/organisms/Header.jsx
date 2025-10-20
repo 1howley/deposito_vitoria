@@ -19,7 +19,7 @@ export function Header({ cartCount, onCartClick }) {
                         </div>
                         <div className="min-w-0">
                             <h1 className="text-lg md:text-2xl font-bold text-primary truncate">
-                                Depósito Vitória Cajuru
+                                Depósito Vitória
                             </h1>
                             <p className="text-xs text-muted-foreground hidden sm:block">
                                 Materiais de Construção
