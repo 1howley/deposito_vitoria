@@ -4,6 +4,7 @@ import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
 import { useState } from "react";
+import logo from "../../assets/logo.jpg";
 
 export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,19 +13,23 @@ export function Header({ cartCount, onCartClick }) {
         <header className="bg-white shadow-sm border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 md:py-6">
                 <div className="flex items-center justify-between gap-2 md:gap-4">
-                    {/* Logo */}
                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                        <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg flex items-center justify-center">
-                            <Crown className="h-4 w-4 md:h-6 md:w-6 text-primary-foreground" />
-                        </div>
-                        <div className="min-w-0">
-                            <h1 className="text-lg md:text-2xl font-bold text-primary truncate">
+                        <Link to ="/">  
+                            <img src={logo} alt="logo da minha empresa - voltar para a pagina inicial"/>
+                      
+                        </Link>
+                        <Link to ="/">  
+                            <div className="min-w-0">
+                                <h1 className="text-lg md:text-2xl font-bold text-primary truncate">
                                 Depósito Vitória
-                            </h1>
-                            <p className="text-xs text-muted-foreground hidden sm:block">
+                                </h1>
+                                <p className="text-xs text-muted-foreground hidden sm:block">
                                 Materiais de Construção
-                            </p>
-                        </div>
+                                </p>
+                            </div> 
+                        </Link>
+                       
+                  
                     </div>
 
                     {/* Search bar - Desktop */}
@@ -32,7 +37,7 @@ export function Header({ cartCount, onCartClick }) {
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                             <Input
-                                placeholder="Busque por produtos..."
+                                placeholder="O que você procura no Depósito Vitória?"
                                 className="pl-12 h-12 bg-muted/30 border-0 rounded-full"
                             />
                         </div>
