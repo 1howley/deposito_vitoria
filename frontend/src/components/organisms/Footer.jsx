@@ -43,7 +43,7 @@ export function Footer() {
                             </div>
                             <div className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 text-primary" />
-                                <span>contato@depositovitoria.com.br</span>
+                                <span>depjardimvitoria@gmail.com</span>
                             </div>
                         </div>
                     </div>
@@ -76,14 +76,14 @@ export function Footer() {
                                         Segunda a Sexta
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        8:00 às 18:00
+                                        7:00 às 18:00
                                     </p>
                                 </div>
                             </div>
                             <div className="ml-6">
                                 <p className="font-medium">Sábado</p>
                                 <p className="text-sm text-muted-foreground">
-                                    8:00 às 12:00
+                                    7:00 às 12:00
                                 </p>
                             </div>
                             <div className="ml-6">

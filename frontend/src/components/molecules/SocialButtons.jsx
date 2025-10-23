@@ -19,7 +19,7 @@ const SocialButtons = () => {
     };
 
     const handleWhatsappClick = () => {
-        window.open("https://wa.me/5537988311873", "_blank");
+        window.open("https://wa.me/5537998203602", "_blank");
     };
 
     return (
