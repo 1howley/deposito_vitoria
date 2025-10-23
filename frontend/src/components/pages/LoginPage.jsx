@@ -14,6 +14,8 @@ import {
 import { Separator } from "../atoms/separator";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../config/firebase";
 
 export function LoginPage() {
     const [loginEmail, setLoginEmail] = useState("");
@@ -88,16 +90,24 @@ export function LoginPage() {
         }, 1500);
     };
 
-    const handleGoogleAuth = () => {
+    const handleGoogleAuth = async () => {
         setIsLoading(true);
         toast.info("Redirecionando para autenticação do Google...");
 
-        // Simulate Google OAuth
-        setTimeout(() => {
-            toast.success("Login com Google realizado com sucesso!");
+        const provider = new GoogleAuthProvider();
+
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            console.log("Usuário autenticado:", user);
+            toast.success(`Bem-vindo, ${user.displayName || "usuário"}!`);
             setIsLoading(false);
-            // Here you would integrate with Google OAuth
-        }, 2000);
+            //navigate("/");
+        } catch (error) {
+            console.error("Erro na autenticação com o Google:", error);
+            toast.error("Falha na autenticação com o Google.");
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -391,11 +401,17 @@ export function LoginPage() {
 
                             {/* Separator */}
                             <div className="my-6 flex items-center gap-3">
-                                <Separator aria-hidden="true" className="flex-1" />
+                                <Separator
+                                    aria-hidden="true"
+                                    className="flex-1"
+                                />
                                 <span className="px-2 text-sm text-muted-foreground bg-card">
                                     ou continue com
                                 </span>
-                                <Separator aria-hidden="true" className="flex-1" />
+                                <Separator
+                                    aria-hidden="true"
+                                    className="flex-1"
+                                />
                             </div>
 
                             {/* Google Button */}
