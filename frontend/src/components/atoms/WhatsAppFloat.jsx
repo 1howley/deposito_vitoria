@@ -3,7 +3,7 @@ import { Button } from "./button";
 
 export function WhatsAppFloat() {
     const handleWhatsAppClick = () => {
-        const phoneNumber = "5541999998888";
+        const phoneNumber = "5537998203602";
         const message =
             "Olá! Gostaria de mais informações sobre os produtos do Depósito Vitória Cajuru.";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;

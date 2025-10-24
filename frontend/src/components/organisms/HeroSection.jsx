@@ -5,7 +5,7 @@ import { Badge } from "../atoms/badge";
 export function HeroSection({ onShopNow }) {
     const handleConsultorClick = () => {
         // Abre WhatsApp com mensagem pré-definida
-        const phoneNumber = "5541999998888"; // Número do WhatsApp
+        const phoneNumber = "5537998203602"; // Número do WhatsApp
         const message =
             "Olá! Gostaria de falar com um consultor sobre materiais de construção.";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
