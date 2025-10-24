@@ -182,6 +182,7 @@ createRoot(document.getElementById("root")).render(
                 <Route path="sale" element={<SalePage />} />
             </Route>
             <Route path="login" element={<LoginPage />} />
+            <Route path="Profile" element={<UserProfilePage />} />
         </Routes>
     </BrowserRouter>
 );
