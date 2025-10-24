@@ -143,7 +143,7 @@ export function LoginPage() {
                             </svg>
                         </div>
                         <h1 className="text-3xl mb-2">
-                            Depósito Vitória Cajuru
+                            Depósito Vitória 
                         </h1>
                         <p className="text-muted-foreground">
                             Acesse sua conta ou crie uma nova
