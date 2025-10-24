@@ -1,13 +1,40 @@
-import { ShoppingCart, Menu, Search, Crown, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ShoppingCart, Menu, Search, X } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
-import { useState } from "react";
 import logo from "../../assets/logo.jpg";
+import UserMenu from "../molecules/UserMenu";
+import { FaUser } from 'react-icons/fa';
 
 export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+    const iconRef = useRef(null);
+
+    const toggleMenu = () => {
+        setIsMenuOpen(prevState => !prevState);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && 
+                !menuRef.current.contains(event.target) &&
+                iconRef.current &&
+                !iconRef.current.contains(event.target)) 
+            {
+                setIsMenuOpen(false); // Fecha o menu
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+    const [isLoggedIn, setIsLoggedIn] = useState(true); // Simulação do estado de autenticação
 
     return (
         <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -35,17 +62,17 @@ export function Header({ cartCount, onCartClick }) {
                     {/* Search bar - Desktop */}
                     <div className="flex-1 max-w-2xl mx-4 hidden md:block">
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                             <Input
                                 placeholder="O que você procura no Depósito Vitória?"
-                                className="pl-12 h-12 bg-muted/30 border-0 rounded-full"
+                                className="pl-12 h-12 bg-gray-100 border-0 rounded-full"
                             />
                         </div>
                     </div>
 
                     {/* Cart and Menu */}
                     <div className="flex items-center gap-2">
-                        <Link to="login">
+                        {!isLoggedIn &&(<Link to="login">
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -53,7 +80,24 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 <span>Entrar</span>
                             </Button>
-                        </Link>
+                        </Link> 
+                        )}
+                        {isLoggedIn && (<div className="relative hidden md:flex">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-10 md:h-12 w-10 md:w-12 p-0 rounded-full"
+                                    onClick={toggleMenu}
+                                    ref={iconRef}
+                                >
+                                    <FaUser className="h-4 w-4 md:h-5 md:w-5" />
+                                </Button>
+                                
+                                <UserMenu isOpen={isMenuOpen} ref={menuRef} />
+                            </div>
+                        )}
+                        
+                        
                         <Button
                             onClick={onCartClick}
                             size="sm"
