@@ -14,22 +14,22 @@ export function Header({ cartCount, onCartClick }) {
             <div className="container mx-auto px-4 py-4 md:py-6">
                 <div className="flex items-center justify-between gap-2 md:gap-4">
                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                        <Link to ="/">  
-                            <img src={logo} alt="logo da minha empresa - voltar para a pagina inicial"/>
-                      
+                        <Link to="/">
+                            <img src={logo} alt="logo da minha empresa - voltar para a pagina inicial" />
+
                         </Link>
-                        <Link to ="/">  
+                        <Link to="/">
                             <div className="min-w-0">
                                 <h1 className="text-lg md:text-2xl font-bold text-primary truncate">
-                                Depósito Vitória
+                                    Depósito Vitória
                                 </h1>
                                 <p className="text-xs text-muted-foreground hidden sm:block">
-                                Materiais de Construção
+                                    Materiais de Construção
                                 </p>
-                            </div> 
+                            </div>
                         </Link>
-                       
-                  
+
+
                     </div>
 
                     {/* Search bar - Desktop */}
@@ -115,7 +115,7 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 Ofertas
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium" to="basics">
                                 Materiais Básicos
                             </Link>
                             <Link className="text-foreground hover:text-primary transition-colors font-medium">
