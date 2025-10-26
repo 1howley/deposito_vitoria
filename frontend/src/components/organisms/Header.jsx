@@ -159,7 +159,9 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 Ofertas
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium"
+                            to="basics"
+                            >
                                 Materiais Básicos
                             </Link>
                             <Link className="text-foreground hover:text-primary transition-colors font-medium">

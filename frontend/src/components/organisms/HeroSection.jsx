@@ -5,9 +5,9 @@ import { Badge } from "../atoms/badge";
 export function HeroSection({ onShopNow }) {
     const handleConsultorClick = () => {
         // Abre WhatsApp com mensagem pré-definida
-        const phoneNumber = "5541999998888"; // Número do WhatsApp
-        const message =
-            "Olá! Gostaria de falar com um consultor sobre materiais de construção.";
+        const phoneNumber = "5537998203602"; // Número do WhatsApp
+        const message = "Olá! Gostaria de mais informações sobre os produtos do Depósito Vitória.";
+            
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, "_blank");
     };
@@ -51,7 +51,7 @@ export function HeroSection({ onShopNow }) {
                             className="group h-12 md:h-14 px-6 md:px-8 rounded-full text-base md:text-lg border-2 hover:bg-green-50 hover:border-green-500 hover:text-green-700 transition-all duration-200"
                         >
                             <MessageCircle className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 group-hover:scale-110 transition-transform" />
-                            Falar com Consultor
+                            Falar com Atendente
                         </Button>
                     </div>
 
