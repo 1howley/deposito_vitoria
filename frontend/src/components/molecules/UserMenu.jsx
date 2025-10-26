@@ -1,6 +1,8 @@
 import React from 'react';
 // Importa um ícone (ex: react-icons)
 import { FaUser } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+
 
 // Usamos React.forwardRef para passar a 'ref' do Header para o 'div' principal
 const UserMenu = React.forwardRef((props, ref) => {
@@ -33,12 +35,14 @@ const UserMenu = React.forwardRef((props, ref) => {
             {/* Seção 3: Links de navegação */}
             <nav className="menu-links pb-2">
                 <ul>
-                    <li>
-                        <a href="#" className="block py-2 px-6 text-base text-gray-800 
-                                              transition-colors duration-200 hover:bg-gray-100">
-                            Meu perfil
-                        </a>
-                    </li>
+                    <Link
+                        href="#" className="block py-2 px-6 text-base text-gray-800 
+                                              transition-colors duration-200 hover:bg-gray-100"
+                            to="profile"
+                            >  
+                            Meu Perfil
+                        </Link>
+                            
                     <li>
                         <a href="#" className="block py-2 px-6 text-base text-gray-800 
                                               transition-colors duration-200 hover:bg-gray-100">

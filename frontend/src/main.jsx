@@ -6,6 +6,7 @@ import { CatalogPage } from "./components/pages/CatalogPage";
 import { LoginPage } from "./components/pages/LoginPage";
 import { SalePage } from "./components/pages/SalePage";
 import "./index.css";
+import {UserProfilePage} from "./components/pages/UserProfilePage";
 // Mock data para categorias
 const categories = [
     {
@@ -180,8 +181,10 @@ createRoot(document.getElementById("root")).render(
                 />
                 {/* Adicione outras rotas aqui, ex: <Route path="product/:id" element={<ProductDetails />} /> */}
                 <Route path="sale" element={<SalePage />} />
+            <Route path="Profile" element={<UserProfilePage />} />
             </Route>
             <Route path="login" element={<LoginPage />} />
+            
         </Routes>
     </BrowserRouter>
 );
