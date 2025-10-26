@@ -1,6 +1,6 @@
 import {User,Package,Heart,UserCircle,Phone,KeyRound,Home,Sparkles,} from "lucide-react";
 
-export default function UserProfilePage() {
+export function UserProfilePage() {
   return (
     <div className="flex min-h-screen bg-neutral-50">
       {/* 1. Barra Lateral (Sidebar) */}
