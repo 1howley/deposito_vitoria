@@ -7,14 +7,14 @@ export default {
     theme: {
         extend: {
             width: {
-        'menu-dropdown': '320px'
-      },
-      colors: {
-        'vermelho-botao': '#ba2025',
-        // você também pode adicionar o verde do seu hover
-        'verde-hover': '#00a86b',
-        'avatar-roxo': '#6a48d9',
-      }
+                "menu-dropdown": "320px",
+            },
+            colors: {
+                "vermelho-botao": "#ba2025",
+                // você também pode adicionar o verde do seu hover
+                "verde-hover": "#00a86b",
+                "avatar-roxo": "#6a48d9",
+            },
         },
     },
     plugins: [],

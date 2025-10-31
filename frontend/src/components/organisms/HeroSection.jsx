@@ -6,8 +6,9 @@ export function HeroSection({ onShopNow }) {
     const handleConsultorClick = () => {
         // Abre WhatsApp com mensagem pré-definida
         const phoneNumber = "5537998203602"; // Número do WhatsApp
-        const message = "Olá! Gostaria de mais informações sobre os produtos do Depósito Vitória.";
-            
+        const message =
+            "Olá! Gostaria de mais informações sobre os produtos do Depósito Vitória.";
+
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, "_blank");
     };

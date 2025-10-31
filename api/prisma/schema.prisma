@@ -14,9 +14,8 @@ datasource db {
 }
 
 model User {
-  userId    Int      @id @default(autoincrement())
+  userId    String   @id 
   email     String
-  password  String
   name      String?
   role      Role     @default(CUSTOMER)
 
@@ -56,7 +55,7 @@ model Product {
 
 model Address {
   addressId   Int          @id @default(autoincrement())
-  clientId    Int
+  clientId    String
   zipCode     String       @db.VarChar(9)
   street      String       @db.VarChar(255)
   number      String       @db.VarChar(10)
@@ -83,7 +82,7 @@ enum AddressType {
 
 model Cart {
   cartId      Int       @id @default(autoincrement())
-  clientId    Int       @unique
+  clientId    String       @unique
   createdAt   DateTime  @default(now()) @map("data_criacao")
   status      String
 
@@ -131,7 +130,7 @@ enum PaymentStatus {
 
 model Order {
   orderId          Int          @id @default(autoincrement())
-  clientId         Int
+  clientId         String
   deliveryAddressId Int         @map("id_endereco_entrega")
   paymentId        Int          @unique
   orderedAt        DateTime     @default(now()) @map("data_pedido")

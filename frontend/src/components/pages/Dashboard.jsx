@@ -16,7 +16,7 @@ export function Dashboard({ featuredProducts, categories }) {
         <>
             <HeroSection onShopNow={scrollToProducts} />
 
-            <CategorySection categories={categories}/>
+            <CategorySection categories={categories} />
 
             <section id="products" className="py-12 md:py-20 bg-muted/20">
                 <div className="container mx-auto px-4">

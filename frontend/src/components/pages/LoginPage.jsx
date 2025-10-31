@@ -1,4 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
+
+// --- Importações do Firebase ---
+import {
+    GoogleAuthProvider,
+    signInWithPopup,
+    createUserWithEmailAndPassword, // <-- Importar
+    signInWithEmailAndPassword, // <-- Importar
+} from "firebase/auth";
+import { auth } from "../../config/firebase";
+
+// --- Importação do seu Service ---
+import { setUser } from "../../services/userService"; // <-- Importar (ajuste o caminho)
+
+// --- Seus Componentes de UI ---
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../atoms/tabs";
 import {
     Card,
@@ -7,11 +23,6 @@ import {
     CardHeader,
     CardTitle,
 } from "../atoms/card";
-import { toast } from "sonner";
-import { useNavigate } from "react-router";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../../config/firebase";
-
 import { LoginForm } from "../organisms/login/LoginForm";
 import { SignupForm } from "../organisms/login/SignUpForm";
 import { LoginHeader } from "../../components/molecules/login/LoginHeader";
@@ -28,26 +39,72 @@ export function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
+    /**
+     * Sincroniza o usuário do Firebase com o seu backend.
+     * Esta é a lógica de "encontre ou crie".
+     */
+    const syncUserWithBackend = async (
+        firebaseUser,
+        provider,
+        extraData = {}
+    ) => {
+        const userDataForBackend = {
+            userId: firebaseUser.uid,
+            email: firebaseUser.email,
+            name: firebaseUser.displayName || extraData.name, // Pega o nome do Google ou do formulário
+            authProvider: provider, // 'google' or 'email'
+            // role: 'user' // Você pode definir um 'role' padrão aqui
+        };
+
+        // Usa o service da nossa conversa anterior [data, error]
+        const [data, error] = await setUser(userDataForBackend);
+
+        if (error) {
+            // Isso é um problema: o usuário existe no Firebase, mas falhou ao salvar no seu DB.
+            // Você pode querer tentar de novo ou mostrar um erro crítico.
+            console.error("Falha ao sincronizar usuário com o backend:", error);
+            toast.error("Erro crítico ao salvar dados do usuário.");
+            return false;
+        }
+
+        console.log("Usuário sincronizado com o backend:", data);
+        return true;
+    };
+
     // --- LÓGICA / HANDLERS ---
+
     const handleLogin = async (e) => {
         e.preventDefault();
-        // ... sua lógica de login ...
         if (!loginEmail || !loginPassword) {
             toast.error("Preencha todos os campos");
             return;
         }
-        // ... resto da lógica
+
         setIsLoading(true);
-        setTimeout(() => {
+        try {
+            // Passo 1: Logar no Firebase
+            await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+
+            // Passo 2: Sucesso!
             toast.success("Login realizado com sucesso!");
+            navigate("/"); // Redireciona para a home
+        } catch (error) {
+            console.error("Erro no login:", error.code);
+            if (
+                error.code === "auth/user-not-found" ||
+                error.code === "auth/wrong-password"
+            ) {
+                toast.error("Email ou senha inválidos.");
+            } else {
+                toast.error("Erro ao tentar fazer login.");
+            }
+        } finally {
             setIsLoading(false);
-            navigate("/");
-        }, 1500);
+        }
     };
 
     const handleSignup = async (e) => {
         e.preventDefault();
-        // ... sua lógica de signup ...
         if (
             !signupName ||
             !signupEmail ||
@@ -57,29 +114,69 @@ export function LoginPage() {
             toast.error("Preencha todos os campos");
             return;
         }
-        // ... resto da lógica
+        if (signupPassword !== signupConfirmPassword) {
+            toast.error("As senhas não conferem.");
+            return;
+        }
+
         setIsLoading(true);
-        setTimeout(() => {
-            toast.success("Conta criada com sucesso!");
+        try {
+            // Passo 1: Criar usuário no Firebase
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                signupEmail,
+                signupPassword
+            );
+            const firebaseUser = userCredential.user;
+
+            // Passo 2: Sincronizar usuário com nosso backend
+            const syncSuccess = await syncUserWithBackend(
+                firebaseUser,
+                "email",
+                { name: signupName }
+            );
+
+            if (syncSuccess) {
+                toast.success("Conta criada com sucesso!");
+                navigate("/"); // Redireciona para a home
+            }
+        } catch (error) {
+            console.error("Erro no cadastro:", error.code);
+            if (error.code === "auth/email-already-in-use") {
+                toast.error("Este email já está em uso.");
+            } else {
+                toast.error("Erro ao criar conta.");
+            }
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handleGoogleAuth = async () => {
         setIsLoading(true);
-        // ... sua lógica do Google Auth ...
-        toast.info("Redirecionando para autenticação do Google...");
         const provider = new GoogleAuthProvider();
+
         try {
+            // Passo 1: Logar/Criar usuário com Google no Firebase
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            console.log("Usuário autenticado:", user);
-            toast.success(`Bem-vindo, ${user.displayName || "usuário"}!`);
-            setIsLoading(false);
-            //navigate("/");
+            const firebaseUser = result.user;
+
+            // Passo 2: Sincronizar usuário com nosso backend ("encontre ou crie")
+            const syncSuccess = await syncUserWithBackend(
+                firebaseUser,
+                "google"
+            );
+
+            if (syncSuccess) {
+                toast.success(`Bem-vindo, ${firebaseUser.displayName}!`);
+                navigate("/");
+            }
         } catch (error) {
             console.error("Erro na autenticação com o Google:", error);
-            toast.error("Falha na autenticação com o Google.");
+            if (error.code !== "auth/popup-closed-by-user") {
+                toast.error("Falha na autenticação com o Google.");
+            }
+        } finally {
             setIsLoading(false);
         }
     };

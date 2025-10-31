@@ -6,7 +6,7 @@ import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
 import logo from "../../assets/logo.jpg";
 import UserMenu from "../molecules/UserMenu";
-import { FaUser } from 'react-icons/fa';
+import { FaUser } from "react-icons/fa";
 
 export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,48 +15,49 @@ export function Header({ cartCount, onCartClick }) {
     const iconRef = useRef(null);
 
     const toggleMenu = () => {
-        setIsMenuOpen(prevState => !prevState);
+        setIsMenuOpen((prevState) => !prevState);
     };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuRef.current && 
+            if (
+                menuRef.current &&
                 !menuRef.current.contains(event.target) &&
                 iconRef.current &&
-                !iconRef.current.contains(event.target)) 
-            {
+                !iconRef.current.contains(event.target)
+            ) {
                 setIsMenuOpen(false); // Fecha o menu
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside);
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-    const [isLoggedIn, setIsLoggedIn] = useState(true); // Simulação do estado de autenticação
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // Simulação do estado de autenticação
 
     return (
         <header className="bg-white shadow-sm border-b sticky top-0 z-50">
             <div className="container mx-auto px-4 py-4 md:py-6">
                 <div className="flex items-center justify-between gap-2 md:gap-4">
                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                        <Link to ="/">  
-                            <img src={logo} alt="logo da minha empresa - voltar para a pagina inicial"/>
-                      
+                        <Link to="/">
+                            <img
+                                src={logo}
+                                alt="logo da minha empresa - voltar para a pagina inicial"
+                            />
                         </Link>
-                        <Link to ="/">  
+                        <Link to="/">
                             <div className="min-w-0">
                                 <h1 className="text-lg md:text-2xl font-bold text-primary truncate">
-                                Depósito Vitória
+                                    Depósito Vitória
                                 </h1>
                                 <p className="text-xs text-muted-foreground hidden sm:block">
-                                Materiais de Construção
+                                    Materiais de Construção
                                 </p>
-                            </div> 
+                            </div>
                         </Link>
-                       
-                  
                     </div>
 
                     {/* Search bar - Desktop */}
@@ -72,17 +73,19 @@ export function Header({ cartCount, onCartClick }) {
 
                     {/* Cart and Menu */}
                     <div className="flex items-center gap-2">
-                        {!isLoggedIn &&(<Link to="login">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="hidden md:flex h-10 md:h-12 px-3 md:px-6 rounded-full"
-                            >
-                                <span>Entrar</span>
-                            </Button>
-                        </Link> 
+                        {!isLoggedIn && (
+                            <Link to="login">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="hidden md:flex h-10 md:h-12 px-3 md:px-6 rounded-full"
+                                >
+                                    <span>Entrar</span>
+                                </Button>
+                            </Link>
                         )}
-                        {isLoggedIn && (<div className="relative hidden md:flex">
+                        {isLoggedIn && (
+                            <div className="relative hidden md:flex">
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -92,12 +95,11 @@ export function Header({ cartCount, onCartClick }) {
                                 >
                                     <FaUser className="h-4 w-4 md:h-5 md:w-5" />
                                 </Button>
-                                
+
                                 <UserMenu isOpen={isMenuOpen} ref={menuRef} />
                             </div>
                         )}
-                        
-                        
+
                         <Button
                             onClick={onCartClick}
                             size="sm"
@@ -159,8 +161,9 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 Ofertas
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium"
-                            to="basics"
+                            <Link
+                                className="text-foreground hover:text-primary transition-colors font-medium"
+                                to="basics"
                             >
                                 Materiais Básicos
                             </Link>

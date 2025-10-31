@@ -4,7 +4,7 @@ import prismaClient from "../prisma/index.js";
 class UserService {
     async createUser(user: CreateUserDTO) {
 
-        const { email, password, name, role } = user;
+        const { userId, email, name, role } = user;
 
         if (!email) {
             throw new Error("> email is empty");
@@ -12,10 +12,10 @@ class UserService {
 
         const userCreated = await prismaClient.user.create({
             data: {
+                userId,
                 email,
-                password,
-                name: name || "",
-                role
+                name: name ?? null,
+                role: role ?? 'CUSTOMER'
             }
         })
 
