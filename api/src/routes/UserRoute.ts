@@ -4,7 +4,7 @@ import type {
     FastifyReply,
     FastifyRequest,
 } from "fastify";
-import { UserController } from "../controllers/UserController.js"
+import { UserController } from "../controllers/UserController.js";
 
 export const UserRoute = async (
     fastify: FastifyInstance,
@@ -12,17 +12,11 @@ export const UserRoute = async (
 ) => {
     const userController = new UserController();
 
-    fastify.get(
-        "/",
-        async (request: FastifyRequest, reply: FastifyReply) => {
-            return userController.listAllUsers(request, reply);
-        }
-    );
+    fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
+        return userController.listAllUsers(request, reply);
+    });
 
-    fastify.post(
-        "/",
-        async (request: FastifyRequest, reply: FastifyReply) => {
-            return userController.createUser(request, reply);
-        }
-    );
+    fastify.post("/", async (request: FastifyRequest, reply: FastifyReply) => {
+        return userController.createUser(request, reply);
+    });
 };

@@ -3,7 +3,6 @@ import prismaClient from "../prisma/index.js";
 
 class UserService {
     async createUser(user: CreateUserDTO) {
-
         const { userId, email, name, role } = user;
 
         if (!email) {
@@ -15,9 +14,9 @@ class UserService {
                 userId,
                 email,
                 name: name ?? null,
-                role: role ?? 'CUSTOMER'
-            }
-        })
+                role: role ?? "CUSTOMER",
+            },
+        });
 
         return userCreated;
     }
