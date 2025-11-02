@@ -12,7 +12,7 @@ import {
 import { auth } from "../../config/firebase";
 
 // --- Importação do seu Service ---
-import { setUser } from "../../services/userService"; // <-- Importar (ajuste o caminho)
+import { setUser } from "../../services/users/UserService"; // <-- Importar (ajuste o caminho)
 
 // --- Seus Componentes de UI ---
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../atoms/tabs";
@@ -52,7 +52,7 @@ export function LoginPage() {
             userId: firebaseUser.uid,
             email: firebaseUser.email,
             name: firebaseUser.displayName || extraData.name, // Pega o nome do Google ou do formulário
-            authProvider: provider, // 'google' or 'email'
+            //authProvider: provider, // 'google' or 'email'
             // role: 'user' // Você pode definir um 'role' padrão aqui
         };
 
