@@ -8,6 +8,7 @@ import { SalePage } from "./components/pages/SalePage";
 import "./index.css";
 import { UserProfilePage } from "./components/pages/UserProfilePage";
 import { BasicsPage } from "./components/pages/BasicsPage";
+import { AuthProvider } from "./context/AuthProvider";
 // Mock data para categorias
 const categories = [
     {
@@ -157,35 +158,37 @@ const allProducts = [
 const featuredProducts = allProducts.slice(0, 6);
 
 createRoot(document.getElementById("root")).render(
-    <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Layout />}>
-                {/* A rota principal (index) renderiza a HomePage */}
-                <Route
-                    index
-                    element={
-                        <Dashboard
-                            featuredProducts={featuredProducts}
-                            categories={categories}
-                        />
-                    }
-                />
-                {/* A rota /catalog renderiza a CatalogPage */}
-                <Route
-                    path="catalog"
-                    element={
-                        <CatalogPage
-                            products={allProducts}
-                            categories={categories}
-                        />
-                    }
-                />
-                {/* Adicione outras rotas aqui, ex: <Route path="product/:id" element={<ProductDetails />} /> */}
-                <Route path="sale" element={<SalePage />} />
-                <Route path="Profile" element={<UserProfilePage />} />
-                <Route path="basics" element={<BasicsPage />} />
-            </Route>
-            <Route path="login" element={<LoginPage />} />
-        </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    {/* A rota principal (index) renderiza a HomePage */}
+                    <Route
+                        index
+                        element={
+                            <Dashboard
+                                featuredProducts={featuredProducts}
+                                categories={categories}
+                            />
+                        }
+                    />
+                    {/* A rota /catalog renderiza a CatalogPage */}
+                    <Route
+                        path="catalog"
+                        element={
+                            <CatalogPage
+                                products={allProducts}
+                                categories={categories}
+                            />
+                        }
+                    />
+                    {/* Adicione outras rotas aqui, ex: <Route path="product/:id" element={<ProductDetails />} /> */}
+                    <Route path="sale" element={<SalePage />} />
+                    <Route path="Profile" element={<UserProfilePage />} />
+                    <Route path="basics" element={<BasicsPage />} />
+                </Route>
+                <Route path="login" element={<LoginPage />} />
+            </Routes>
+        </BrowserRouter>
+    </AuthProvider>
 );

@@ -1,4 +1,4 @@
 export enum AddressType {
-  DELIVERY = "DELIVERY",
-  BILLING = "BILLING",
+    DELIVERY = "DELIVERY",
+    BILLING = "BILLING",
 }

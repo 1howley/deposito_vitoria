@@ -1,15 +1,30 @@
 import React from "react";
-// Importa um ícone (ex: react-icons)
 import { FaUser } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
+import { signOut } from "firebase/auth";
+import { auth } from "../../config/firebase";
+import { toast } from "sonner";
 
-// Usamos React.forwardRef para passar a 'ref' do Header para o 'div' principal
 const UserMenu = React.forwardRef((props, ref) => {
-    // A lógica de renderização condicional é a mesma:
-    // Se 'isOpen' for false, não renderiza nada.
+    const { currentUser } = useAuth();
+    console.log("Current User in UserMenu:", currentUser);
+    const navigate = useNavigate();
+
     if (!props.isOpen) {
         return null;
     }
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            toast.success("Você saiu com sucesso!");
+            navigate("/");
+        } catch (error) {
+            console.error("Erro ao fazer logout:", error);
+            toast.error("Erro ao tentar sair.");
+        }
+    };
 
     // Se 'isOpen' for true, renderiza o menu com classes do Tailwind
     return (
@@ -29,7 +44,7 @@ const UserMenu = React.forwardRef((props, ref) => {
                 </div>
                 <div className="user-info flex flex-col">
                     <span className="user-name font-bold text-lg text-gray-900">
-                        CELIO
+                        {currentUser.displayName}
                     </span>
                 </div>
             </div>
@@ -65,13 +80,14 @@ const UserMenu = React.forwardRef((props, ref) => {
                         </a>
                     </li>
                     <li>
-                        <a
-                            href="#"
+                        <button
+                            type="button"
+                            onClick={handleSignOut}
                             className="block py-2 px-6 text-base text-gray-800 
                                               transition-colors duration-200 hover:bg-gray-100"
                         >
                             Sair
-                        </a>
+                        </button>
                     </li>
                 </ul>
             </nav>
