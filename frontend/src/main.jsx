@@ -9,6 +9,7 @@ import "./index.css";
 import { UserProfilePage } from "./components/pages/UserProfilePage";
 import { BasicsPage } from "./components/pages/BasicsPage";
 import { AuthProvider } from "./context/AuthProvider";
+import AddProductPage from "./components/pages/AddProductPage";
 // Mock data para categorias
 const categories = [
     {
@@ -186,6 +187,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="sale" element={<SalePage />} />
                     <Route path="Profile" element={<UserProfilePage />} />
                     <Route path="basics" element={<BasicsPage />} />
+                    <Route path="add-product" element={<AddProductPage />} />
                 </Route>
                 <Route path="login" element={<LoginPage />} />
             </Routes>

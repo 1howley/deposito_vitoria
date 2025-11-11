@@ -15,7 +15,7 @@ export function Header({ cartCount, onCartClick }) {
     const menuRef = useRef(null);
     const iconRef = useRef(null);
 
-    const { currentUser } = useAuth();
+    const { user } = useAuth();
 
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
@@ -75,7 +75,7 @@ export function Header({ cartCount, onCartClick }) {
 
                     {/* Cart and Menu */}
                     <div className="flex items-center gap-2">
-                        {!currentUser && (
+                        {!user && (
                             <Link to="login">
                                 <Button
                                     variant="outline"
@@ -86,7 +86,7 @@ export function Header({ cartCount, onCartClick }) {
                                 </Button>
                             </Link>
                         )}
-                        {currentUser && (
+                        {user && (
                             <div className="relative hidden md:flex">
                                 <Button
                                     variant="ghost"
@@ -175,6 +175,14 @@ export function Header({ cartCount, onCartClick }) {
                             <Link className="text-foreground hover:text-primary transition-colors font-medium">
                                 Tintas
                             </Link>
+                            {user?.role === 'admin' && (
+                                <Link
+                                    className="text-foreground hover:text-primary transition-colors font-medium"
+                                    to="add-product"
+                                >
+                                    Add Product
+                                </Link>
+                            )}
                         </ul>
                     </div>
                 </nav>
@@ -234,6 +242,16 @@ export function Header({ cartCount, onCartClick }) {
                                         Atendimento
                                     </a>
                                 </li>
+                                {user?.role === 'admin' && (
+                                    <li>
+                                        <Link
+                                            to="/add-product"
+                                            className="block py-2 px-3 text-foreground hover:text-primary transition-colors font-medium rounded-lg hover:bg-white/50"
+                                        >
+                                            Add Product
+                                        </Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </nav>
