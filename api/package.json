@@ -16,6 +16,8 @@
     "license": "ISC",
     "description": "",
     "devDependencies": {
+        "@types/bcrypt": "^6.0.0",
+        "@types/jsonwebtoken": "^9.0.10",
         "@types/node": "^24.6.2",
         "@typescript-eslint/eslint-plugin": "^8.45.0",
         "@typescript-eslint/parser": "^8.45.0",
@@ -30,8 +32,13 @@
         "@fastify/cors": "^11.1.0",
         "@prisma/client": "^6.16.3",
         "@prisma/extension-accelerate": "^2.0.2",
+        "bcrypt": "^6.0.0",
         "fastify": "^5.6.1",
+<<<<<<< HEAD
         "firebase-admin": "^13.5.0",
+=======
+        "jsonwebtoken": "^9.0.2",
+>>>>>>> ca0c71e (feat(auth): Implementa login/registro seguro com bcrypt e JWT. Adiciona middlewares de autenticação (auth/admin).)
         "tsx": "^4.20.6"
     }
 }
