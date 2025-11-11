@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../services/UserService.js";
 import type { CreateUserDTO } from "../dtos/user/CreateUserDTO.js";
 
-class UserController {
+export class UserController {
     private userService = new UserService();
 
     createUser = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -30,8 +30,7 @@ class UserController {
         }catch (error: any){
             const statusCode = error.message.include("Inválidas") ? 401: 500;
             reply.status(statusCode).send({error: error.message});
-        }
+            }
+        }   
     }
 }
-
-export default { UserController };

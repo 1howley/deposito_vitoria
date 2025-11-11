@@ -4,7 +4,8 @@ import type {
     FastifyReply,
     FastifyRequest,
 } from "fastify";
-import { UserController } from "../controllers/UserController.js";
+
+import { UserController } from "./../controllers/UserController.js";
 
 export const UserRoute = async (
     fastify: FastifyInstance,
