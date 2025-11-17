@@ -9,7 +9,10 @@ import {
 } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
-import { setUser } from "../../services/users/UserService";
+// --- Importação do seu Service ---
+import { setUser } from "../../services/users/UserService";// <-- Importar (ajuste o caminho)
+
+// --- Seus Componentes de UI ---
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../atoms/tabs";
 import {
     Card,

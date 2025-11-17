@@ -8,6 +8,8 @@ import { SalePage } from "./components/pages/SalePage";
 import "./index.css";
 import { UserProfilePage } from "./components/pages/UserProfilePage";
 import { BasicsPage } from "./components/pages/BasicsPage";
+import { ToolsPage } from "./components/pages/ToolsPage";
+import { PaintsPage } from "./components/pages/PaintsPage";
 import { AuthProvider } from "./context/AuthProvider";
 import AddProductPage from "./components/pages/AddProductPage";
 // Mock data para categorias
