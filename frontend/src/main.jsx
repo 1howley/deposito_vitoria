@@ -190,6 +190,8 @@ createRoot(document.getElementById("root")).render(
                     <Route path="Profile" element={<UserProfilePage />} />
                     <Route path="basics" element={<BasicsPage />} />
                     <Route path="add-product" element={<AddProductPage />} />
+                    <Route path="tools" element={<ToolsPage/>}/>
+                    <Route path="paints" element={<PaintsPage/>}/>
                 </Route>
                 <Route path="login" element={<LoginPage />} />
             </Routes>
