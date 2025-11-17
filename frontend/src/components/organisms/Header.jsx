@@ -167,10 +167,10 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 Materiais Básicos
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium" to="tools">
                                 Ferramentas
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium">
+                            <Link className="text-foreground hover:text-primary transition-colors font-medium" to="paints">
                                 Tintas
                             </Link>
                         </ul>

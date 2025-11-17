@@ -8,6 +8,8 @@ import { SalePage } from "./components/pages/SalePage";
 import "./index.css";
 import { UserProfilePage } from "./components/pages/UserProfilePage";
 import { BasicsPage } from "./components/pages/BasicsPage";
+import { ToolsPage } from "./components/pages/ToolsPage";
+import { PaintsPage } from "./components/pages/PaintsPage";
 // Mock data para categorias
 const categories = [
     {
@@ -184,6 +186,8 @@ createRoot(document.getElementById("root")).render(
                 <Route path="sale" element={<SalePage />} />
                 <Route path="Profile" element={<UserProfilePage />} />
                 <Route path="basics" element={<BasicsPage />} />
+                <Route path="tools" element ={<ToolsPage/>} />
+                <Route path="Paints" element = {<PaintsPage/>} />
             </Route>
             <Route path="login" element={<LoginPage />} />
         </Routes>
