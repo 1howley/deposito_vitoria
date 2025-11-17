@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
-// --- Importações do Firebase ---
 import {
     GoogleAuthProvider,
     signInWithPopup,
-    createUserWithEmailAndPassword, // <-- Importar
-    signInWithEmailAndPassword, // <-- Importar
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
@@ -39,10 +37,6 @@ export function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    /**
-     * Sincroniza o usuário do Firebase com o seu backend.
-     * Esta é a lógica de "encontre ou crie".
-     */
     const syncUserWithBackend = async (
         firebaseUser,
         provider,
@@ -53,25 +47,18 @@ export function LoginPage() {
             email: firebaseUser.email,
             name: firebaseUser.displayName || extraData.name, // Pega o nome do Google ou do formulário
             authProvider: provider, // 'google' or 'email'
-            // role: 'user' // Você pode definir um 'role' padrão aqui
         };
 
-        // Usa o service da nossa conversa anterior [data, error]
-        const [data, error] = await setUser(userDataForBackend);
-
-        if (error) {
-            // Isso é um problema: o usuário existe no Firebase, mas falhou ao salvar no seu DB.
-            // Você pode querer tentar de novo ou mostrar um erro crítico.
+        try {
+            const data = await setUser(userDataForBackend);
+            console.log("Usuário sincronizado com o backend:", data);
+            return true;
+        } catch (error) {
             console.error("Falha ao sincronizar usuário com o backend:", error);
             toast.error("Erro crítico ao salvar dados do usuário.");
             return false;
         }
-
-        console.log("Usuário sincronizado com o backend:", data);
-        return true;
     };
-
-    // --- LÓGICA / HANDLERS ---
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -83,11 +70,30 @@ export function LoginPage() {
         setIsLoading(true);
         try {
             // Passo 1: Logar no Firebase
-            await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+            const userCredentials = await signInWithEmailAndPassword(
+                auth,
+                loginEmail,
+                loginPassword
+            );
 
+            const firebaseUser = userCredentials.user;
+
+            const syncSuccess = await syncUserWithBackend(
+                firebaseUser,
+                "email"
+            );
             // Passo 2: Sucesso!
-            toast.success("Login realizado com sucesso!");
-            navigate("/"); // Redireciona para a home
+            if (syncSuccess) {
+                // Passo 3: Sucesso!
+                toast.success("Login realizado com sucesso!");
+                navigate("/"); // Redireciona para a home
+            } else {
+                // Se o sync falhar, é melhor não deixar o usuário prosseguir
+                // (Isso é uma decisão de negócios, mas geralmente é mais seguro)
+                toast.error("Erro ao verificar dados do usuário.");
+                // Opcional: deslogar do firebase se o sync com backend for crítico
+                // await auth.signOut();
+            }
         } catch (error) {
             console.error("Erro no login:", error.code);
             if (

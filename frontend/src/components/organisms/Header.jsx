@@ -7,12 +7,15 @@ import { Badge } from "../atoms/badge";
 import logo from "../../assets/logo.jpg";
 import UserMenu from "../molecules/UserMenu";
 import { FaUser } from "react-icons/fa";
+import { useAuth } from "../../hooks/useAuth";
 
 export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const iconRef = useRef(null);
+
+    const { user } = useAuth();
 
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
@@ -35,7 +38,6 @@ export function Header({ cartCount, onCartClick }) {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Simulação do estado de autenticação
 
     return (
         <header className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -73,7 +75,7 @@ export function Header({ cartCount, onCartClick }) {
 
                     {/* Cart and Menu */}
                     <div className="flex items-center gap-2">
-                        {!isLoggedIn && (
+                        {!user && (
                             <Link to="login">
                                 <Button
                                     variant="outline"
@@ -84,7 +86,7 @@ export function Header({ cartCount, onCartClick }) {
                                 </Button>
                             </Link>
                         )}
-                        {isLoggedIn && (
+                        {user && (
                             <div className="relative hidden md:flex">
                                 <Button
                                     variant="ghost"
@@ -173,6 +175,14 @@ export function Header({ cartCount, onCartClick }) {
                             <Link className="text-foreground hover:text-primary transition-colors font-medium" to="paints">
                                 Tintas
                             </Link>
+                            {user?.role === 'admin' && (
+                                <Link
+                                    className="text-foreground hover:text-primary transition-colors font-medium"
+                                    to="add-product"
+                                >
+                                    Add Product
+                                </Link>
+                            )}
                         </ul>
                     </div>
                 </nav>
@@ -232,6 +242,16 @@ export function Header({ cartCount, onCartClick }) {
                                         Atendimento
                                     </a>
                                 </li>
+                                {user?.role === 'admin' && (
+                                    <li>
+                                        <Link
+                                            to="/add-product"
+                                            className="block py-2 px-3 text-foreground hover:text-primary transition-colors font-medium rounded-lg hover:bg-white/50"
+                                        >
+                                            Add Product
+                                        </Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </nav>

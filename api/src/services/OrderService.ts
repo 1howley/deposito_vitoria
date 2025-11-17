@@ -31,4 +31,28 @@ export class OrderService {
             where: { orderId },
         });
     }
+
+    async updateOrderStatus(orderId: number, newStatus: string){
+        const order = await prismaClient.order.findUnique({
+            where: {orderId},
+        });
+
+        if(!order){
+            throw new Error("Pedido com ID ${orderId} não encontrado");
+        }
+
+        const updatedOrder = await prismaClient.order.update({
+            where: {orderId},
+            data: {status: newStatus},
+            include:{
+                OrderItem: True,
+            }
+        });
+
+        if(NewStatus == "CANCELED"){
+            console.log("[ALERTA] Pedido ${orederId} cancelado. Estoque precisa ser restaurado!");
+        }
+
+        return updatedOrder;
+    }
 }

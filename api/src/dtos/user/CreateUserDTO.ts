@@ -5,4 +5,5 @@ export interface CreateUserDTO {
     email: string;
     name?: string;
     role?: Role;
+    authProvider: string;
 }
