@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OrderService } from "../services/OrderService.js";
 import prismaClient from "../prisma/index.js";
+import { PaginationSchema, PaginationDTO } from "../dtos/product/PaginationDTO.js";
 
 const orderService = new OrderService();
 
@@ -57,8 +58,20 @@ export class OrderController {
 
     async getAllOrders(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
-            const orders = await orderService.getAllOrders();
-            reply.code(200).send(orders);
+            const validationResult = PaginationSchema.safeParse(request.query);
+
+            if(!validationResult.success){
+                return reply.status(400).send({
+                    error: "Parâmetros de paginação inválidos.",
+                    details: validationResult.error.issues,
+                });
+            }
+
+            const { page, limit } = validationResult.data;
+            const skip = (page - 1) * limit;
+            const result = await this.orderService.getAllOrders(skip, limit); 
+
+            reply.status(200).send(result);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }

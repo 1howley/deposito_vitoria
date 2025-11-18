@@ -64,8 +64,28 @@ export class OrderService {
         }); 
     }
 
-    async getAllOrders() {
-        return prismaClient.order.findMany();
+    async getAllOrders(skip: number, take: number) {
+        const totalItems = await prismaClient.order.count();
+        const orders = await prismaClient.order.findMany({
+            skip: skip,
+            take: take,
+            include: {
+                user: {
+                    select: {id: true, name: true, email: true}
+                },
+                OrderItem: true,
+            }
+        });
+
+        return {
+            orders,
+            meta: {
+                totalItems,
+                limit: take,
+                currentPage: (skip / take) + 1,
+                totalPages: Math.ceil(totalItems / take),
+            },
+        };
     }
 
     async getOrderById(orderId: number) {
