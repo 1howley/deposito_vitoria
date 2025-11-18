@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { CreateProductSchema, CreateProductDTO } from "../dtos/product/CreateProductDTO.js";
 import {z} from "zod";
 import { UpdateProductSchema, UpdateProductDTO } from "../dtos/product/UpdateProductDTO.js";
-import { PaginationSchema, PaginationDTO } from "../dtos/product/PaginationDTO.js";
+import { SearchPaginationSchema } from "../dtos/product/PaginationDTO.js";
 
 const productService = new ProductService();
 
@@ -30,7 +30,7 @@ export class ProductController {
 
     async getAllProducts(req: FastifyRequest, reply: FastifyReply) {
         try {
-            const validationResult = PaginationSchema.safeParse(request.body);
+            const validationResult = SearchPaginationSchema.safeParse(request.query);
 
             if(!validationResult.success){
                 return reply.status(400).send({
@@ -39,9 +39,9 @@ export class ProductController {
                 });
             }
 
-            const {page, limit} = validationResult.data;
+            const {page, limit, search, categoryId} = validationResult.data;
             const skip = (page - 1) * limit;
-            const result = await this.productService.getAllProducts(skip, limit);
+            const result = await this.productService.getAllProducts(skip, limit, search, categoryId);
 
             reply.code(200).send(result);
         } catch (error: any) {

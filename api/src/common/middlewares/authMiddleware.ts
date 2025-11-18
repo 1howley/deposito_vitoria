@@ -11,18 +11,19 @@ declare module "fastify"{
 
 export async function authMiddleware(request: FastifyRequest, reply: FastifyReply){
 
-    const authHeader = request.header.authorization;
+    const authHeader = request.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer")){
+    if (!authHeader || !authHeader.startsWith("Bearer ")){
         return reply.status(401).send({error: "Token não fornecido."});
     }
 
-    const token = authHeader.slipt('')[1];
+    const token = authHeader.split(' ')[1];
 
     try{
-        const decoded = jwt.verify(token, JWT_SECRET) as {id: number, role:string};
+        const decoded = jwt.verify(token, JWT_SECRET) as {userId: number, role:string};
+
         request.user = {
-            id: decoded.id,
+            id: decoded.userId,
             role: decoded.role
         };
     }catch(err){
