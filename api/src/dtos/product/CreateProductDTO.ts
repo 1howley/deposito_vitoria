@@ -1,8 +1,21 @@
-export interface CreateProductDTO {
-    name: string;
-    description?: string;
-    basePrice: number;
-    stock: number;
-    brand?: string;
-    category?: string;
-}
+import {z} from "zod";
+
+export const CreateProductSchema = z.object ({
+    name: z.string({
+        required_error: "O nome do produto é obrigatório."
+    }).min(3, "O nome deve ter pelo menos 3 caracteres."),
+
+    description: z.string().optional(),
+
+    price: z.number({
+        required_error: "O preço é obrigatório e deve ser um número."
+    }).positive("O preço deve ser maior que zero."),
+
+    stock: z.number({
+        required_error: "O estoque é obrigatório e deve ser um número inteiro."
+    }).int("O estoque deve ser um número inteiro.").min(0, "O estoque não pode ser negativo."),
+
+    categoryId: z.number().int().optional(),
+});
+
+export type CreateProductDTO = z.infer<typeof CreateProductSchema>;
