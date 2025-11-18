@@ -34,9 +34,28 @@ class UserService {
         return userCreated;
     }
 
-    async getAllUsers() {
-        const users = await prismaClient.user.findMany();
-        return users;
+    async getAllUsers(skip: number, take: number) {
+        const totalItems = await prismaClient.user.count();
+
+        const users = await prismaClient.user.findMany({
+            skip: skip,
+            take: take,
+            select:{
+                id: true,
+                email: true,
+                name: true,
+            },
+        });
+
+        return {
+            users,
+            meta: {
+                totalItems,
+                limit: take,
+                currentPage: (skip/take) + 1,
+                totalPages: Math.ceil(totalItems/take),
+            },
+        };
     }
 }
 

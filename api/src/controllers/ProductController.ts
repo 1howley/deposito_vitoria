@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { CreateProductSchema, CreateProductDTO } from "../dtos/product/CreateProductDTO.js";
 import {z} from "zod";
 import { UpdateProductSchema, UpdateProductDTO } from "../dtos/product/UpdateProductDTO.js";
+import { PaginationSchema, PaginationDTO } from "../dtos/product/PaginationDTO.js";
 
 const productService = new ProductService();
 
@@ -29,8 +30,20 @@ export class ProductController {
 
     async getAllProducts(req: FastifyRequest, reply: FastifyReply) {
         try {
-            const products = await productService.getAllProducts();
-            reply.code(200).send(products);
+            const validationResult = PaginationSchema.safeParse(request.body);
+
+            if(!validationResult.success){
+                return reply.status(400).send({
+                    error: "Parâmetros de paginação inválidos.",
+                    details: validationResult.error.issues,
+                });
+            }
+
+            const {page, limit} = validationResult.data;
+            const skip = (page - 1) * limit;
+            const result = await this.productService.getAllProducts(skip, limit);
+
+            reply.code(200).send(result);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }

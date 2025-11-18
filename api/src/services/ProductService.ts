@@ -9,8 +9,23 @@ export class ProductService {
         });
     }
 
-    async getAllProducts() {
-        return prismaClient.product.findMany();
+    async getAllProducts(skip: number, take: number) {
+        const totalItems = await prismaClient.product.count();
+
+        const products = await prismaClient.product.findMany({
+            skip: skip,
+            take: take,
+        });
+
+        return {
+            products,
+            meta: {
+                totalItems,
+                limit: take,
+                currentPage: (skip/take) + 1,
+                totalPages: Math.ceil(totalItems/take),
+            },
+        };
     }
 
     async getProductById(productId: number) {

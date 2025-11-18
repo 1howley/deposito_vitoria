@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../services/UserService.js";
 import { CreateUserSchema, CreateUserDTO } from "../dtos/user/CreateUserDTO.js";
 import { LoginSchema, LoginDTO } from "../dtos/user/LoginDTO.js";
-
+import { PaginationSchema, PaginationDTO } from "../dtos/product/PaginationDTO.js";
 export class UserController {
     private userService = new UserService();
 
@@ -27,9 +27,24 @@ export class UserController {
     }
 
     async listAllUsers(request: FastifyRequest, reply: FastifyReply){
-        const usersList = await this.userService.getAllUsers();
+        try{
+            const validationResult = PaginationSchema.safeParse(request.query);
 
-        reply.send(usersList);
+            if(!validationResult.success){
+                return reply.status(400).send({
+                    error: "Parâmetros de paginação inválidos.",
+                    details: validationResult.error.issues,
+                });
+            }
+
+            const {page, limit} = validationResult.data;
+            const skip = (page - 1) * limit;
+            const result = await this.userService.getAllUsers(skip, limit);
+
+            reply.send(result);
+        } catch(error: any){
+            reply.status(500).send({ error: error.message });
+        }
     }
 
     async loginUser(request: FastifyRequest, reply: FastifyReply){
