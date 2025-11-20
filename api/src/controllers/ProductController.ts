@@ -1,22 +1,23 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import {
     CreateProductSchema,
-    CreateProductDTO,
+    type CreateProductDTO,
 } from "../dtos/product/CreateProductDTO.js";
 import { z } from "zod";
 import {
     UpdateProductSchema,
-    UpdateProductDTO,
+    type UpdateProductDTO,
 } from "../dtos/product/UpdateProductDTO.js";
 import { SearchPaginationSchema } from "../dtos/product/PaginationDTO.js";
+import { ProductService } from "../services/ProductService.js";
 
-const productService = new ProductService();
 
 export class ProductController {
+    private productService = new ProductService();
     async createProduct(req: FastifyRequest, reply: FastifyReply) {
         try {
             const validationResult = CreateProductSchema.safeParse(
-                request.body
+                req.body
             );
 
             if (!validationResult.success) {
@@ -41,7 +42,7 @@ export class ProductController {
     async getAllProducts(req: FastifyRequest, reply: FastifyReply) {
         try {
             const validationResult = SearchPaginationSchema.safeParse(
-                request.query
+                req.query
             );
 
             if (!validationResult.success) {
@@ -56,8 +57,6 @@ export class ProductController {
             const result = await this.productService.getAllProducts(
                 skip,
                 limit,
-                search,
-                categoryId
             );
 
             reply.code(200).send(result);
@@ -92,7 +91,7 @@ export class ProductController {
 
             const productId = paramsValidated.data.id;
 
-            const product = await productService.getProductById(productId);
+            const product = await this.productService.getProductById(productId);
 
             if (product) {
                 reply.status(200).send(product);
@@ -144,7 +143,7 @@ export class ProductController {
             const updateProductData: UpdateProductDTO =
                 bodyValidatedResult.data;
 
-            const product = await productService.updateProduct(
+            const product = await this.productService.updateProduct(
                 productId,
                 updateProductData
             );
@@ -180,7 +179,7 @@ export class ProductController {
             }
 
             const productId = paramsValidated.data.id;
-            await productService.deleteProduct(productId);
+            await this.productService.deleteProduct(productId);
 
             reply.status(204).send();
         } catch (error: any) {

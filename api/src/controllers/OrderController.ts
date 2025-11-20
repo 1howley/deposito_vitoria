@@ -2,8 +2,8 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { OrderService } from "../services/OrderService.js";
 import prismaClient from "../prisma/index.js";
 import {
-    PaginationSchema,
-    PaginationDTO,
+    SearchPaginationSchema,
+    type SearchPaginationDTO,
 } from "../dtos/product/PaginationDTO.js";
 
 const orderService = new OrderService();
@@ -13,6 +13,7 @@ interface AuthenticatedRequest extends FastifyRequest {
 }
 
 export class OrderController {
+    private orderService = new OrderService();
     async createOrder(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
             const userId = req.user?.id;
@@ -48,7 +49,7 @@ export class OrderController {
             include: {
                 OrderItem: {
                     include: {
-                        product: True,
+                        product: true,
                     },
                 },
             },
@@ -59,7 +60,7 @@ export class OrderController {
         try {
             const userId = req.user?.id;
             if (!userId) {
-                return reply.code(401).send({ message: error.message });
+                return reply.code(401).send({ message: "Usuario nao autenticado. o Middleware falhou" });
             }
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
@@ -68,7 +69,7 @@ export class OrderController {
 
     async getAllOrders(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
-            const validationResult = PaginationSchema.safeParse(request.query);
+            const validationResult = SearchPaginationSchema.safeParse(req.query);
 
             if (!validationResult.success) {
                 return reply.status(400).send({
@@ -88,7 +89,7 @@ export class OrderController {
     }
 
     async getOrderById(
-        req: AuthenticatedRequest<{ Params: { id: string } }>,
+        req: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply
     ) {
         try {
