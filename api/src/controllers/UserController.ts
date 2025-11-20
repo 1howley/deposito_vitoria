@@ -15,7 +15,7 @@ export class UserController {
 
             if (!validationResult.success) {
                 return reply.status(400).send({
-                    error: "Erro de validação de cadrastro.",
+                    error: "Erro de validação de cadastro.",
                     details: validationResult.error.issues,
                 });
             }
@@ -68,6 +68,27 @@ export class UserController {
         } catch (error: any) {
             const statusCode = error.message.include("Inválidas") ? 401 : 500;
             reply.status(statusCode).send({ error: error.message });
+        }
+    }
+
+    async getUserByUid(request: FastifyRequest, reply: FastifyReply) {
+        try {
+            // Assumimos que o UID vem do parâmetro de rota
+            const { userId } = request.params as { userId: string };
+
+            // Você DEVE ter um middleware de autenticação JWT/Firebase aqui 
+            // que valida o idToken (do cabeçalho Authorization) antes de prosseguir.
+
+            const user = await this.userService.findUserByUid(userId);
+            
+            if (!user) {
+                return reply.status(404).send({ error: "Usuário não encontrado." });
+            }
+
+            reply.status(200).send(user);
+        } catch (error: any) {
+            console.error("Erro ao buscar usuário por UID:", error);
+            reply.status(500).send({ error: error.message || "Erro interno ao buscar usuário." });
         }
     }
 }

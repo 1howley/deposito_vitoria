@@ -7,8 +7,8 @@ import { auth } from "../../config/firebase";
 import { toast } from "sonner";
 
 const UserMenu = React.forwardRef((props, ref) => {
-    const { currentUser } = useAuth();
-    console.log("Current User in UserMenu:", currentUser);
+    const { user } = useAuth();
+    console.log("Current User in UserMenu:", user);
     const navigate = useNavigate();
 
     if (!props.isOpen) {
@@ -44,7 +44,7 @@ const UserMenu = React.forwardRef((props, ref) => {
                 </div>
                 <div className="user-info flex flex-col">
                     <span className="user-name font-bold text-lg text-gray-900">
-                        {currentUser.displayName}
+                        {user.displayName}
                     </span>
                 </div>
             </div>

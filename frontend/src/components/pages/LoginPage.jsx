@@ -45,7 +45,8 @@ export function LoginPage() {
         const userDataForBackend = {
             userId: firebaseUser.uid,
             email: firebaseUser.email,
-            name: firebaseUser.displayName || extraData.name, // Pega o nome do Google ou do formulário
+            name: firebaseUser.displayName || extraData.name,
+            role: "ADMIN" ,// Pega o nome do Google ou do formulário
             authProvider: provider, // 'google' or 'email'
         };
 

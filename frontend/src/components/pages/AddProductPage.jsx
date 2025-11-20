@@ -46,7 +46,7 @@ const AddProductPage = () => {
         }
     };
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'ADMIN') {
         return (
             <div className="flex items-center justify-center h-full">
                 <p>You are not authorized to view this page.</p>

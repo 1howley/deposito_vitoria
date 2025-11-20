@@ -14,8 +14,8 @@ datasource db {
 }
 
 model User {
-  userId    String   @id 
-  email     String
+  userId    String   @id
+  email     String   
   name      String?
   role      Role     @default(CUSTOMER)
   authProvider String

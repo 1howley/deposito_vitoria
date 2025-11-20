@@ -9,33 +9,33 @@ const JWT_SECRET = process.env.JWT_SECRET || "sua-chave-secreta-padrao-forte";
 const JWT_EXPIRES_IN = "1d"; // Expira em 1 dia
 export class UserService {
     async createUser(userData: CreateUserDTO) {
-        const { email, password, name, authProvider } = userData;
+        const { userId, email, name, role, authProvider } = userData;
 
         if (!email) {
             throw new Error("O email é obrigatório.");
         }
 
         const exisingUser = await prismaClient.user.findUnique({
-            where: { email },
+            where: { userId },
         });
 
         if (exisingUser) {
             throw new Error("Usuário com este email já existe.");
         }
 
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const userCreated = await prismaClient.user.create({
             data: {
-                email: email,
-                password: hashedPassword,
-                name: name,
-                authProvider: authProvider,
+                userId,
+                email,
+                name: name || null,
+                ...(role && { role }),
+                authProvider,
             },
         });
 
         // Omitir a senha no retorno
-        const { password: userPassword, ...userWithoutPassword } = userCreated;
+        const { ...userWithoutPassword } = userCreated;
         return userWithoutPassword;
     }
 
@@ -43,10 +43,10 @@ export class UserService {
         const user = await prismaClient.user.findUnique({
             where: { email },
             select: {
-                id: true,
+                userId: true,
                 email: true,
                 name: true,
-                password: true,
+                role: true,
             },
         });
 
@@ -54,13 +54,8 @@ export class UserService {
             throw new Error("Credenciais Inválidas");
         }
 
-        const isPasswordvalid = await bcrypt.compare(password, user.password);
 
-        if (!isPasswordvalid) {
-            throw new Error("Credenciais Inválidas");
-        }
-
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+        const token = jwt.sign({ userId: user.userId }, JWT_SECRET, {
             expiresIn: JWT_EXPIRES_IN,
         });
 
@@ -79,8 +74,9 @@ export class UserService {
             skip: skip,
             take: take,
             select: {
-                id: true,
+                userId: true,
                 email: true,
+                role: true,
                 name: true,
             },
         });
@@ -94,6 +90,21 @@ export class UserService {
                 totalPages: Math.ceil(totalItems / take),
             },
         };
+    }
+    async findUserByUid(uid: string) {
+        const user = await prismaClient.user.findUnique({
+            where: { userId: uid },
+            select: {
+                userId: true,
+                email: true,
+                name: true,
+                role: true, // IMPORTANTE: Incluir a role
+                authProvider: true,
+                // ... outros dados que o frontend precisa
+            },
+        });
+        
+        return user;
     }
 }
 

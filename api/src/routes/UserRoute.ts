@@ -18,9 +18,15 @@ export const UserRoute = async (
     });
 
     fastify.post(
-        "/login",
+        "/",
         async (request: FastifyRequest, reply: FastifyReply) => {
             return userController.createUser(request, reply);
         }
     );
+    fastify.get(
+        '/:userId', 
+        async (request: FastifyRequest, reply: FastifyReply) => {
+            return userController.getUserByUid(request, reply);
+        }
+    )
 };

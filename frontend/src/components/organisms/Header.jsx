@@ -16,7 +16,7 @@ export function Header({ cartCount, onCartClick }) {
     const iconRef = useRef(null);
 
     const { user } = useAuth();
-
+    console.log(user)
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
     };
@@ -175,7 +175,7 @@ export function Header({ cartCount, onCartClick }) {
                             <Link className="text-foreground hover:text-primary transition-colors font-medium" to="paints">
                                 Tintas
                             </Link>
-                            {user?.role === 'admin' && (
+                            {user?.role == 'ADMIN' && (
                                 <Link
                                     className="text-foreground hover:text-primary transition-colors font-medium"
                                     to="add-product"
