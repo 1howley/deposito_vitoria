@@ -5,9 +5,9 @@ import { OrderItemController } from "../controllers/OrderItemController.js";
 
 export class OrderService {
     async createOrder(userId: number, orderData: CreateOrderDTO) {
-        return prismaClient.$transaction(async (tx) =>{
+        return prismaClient.$transaction(async (tx) => {
             const cart = await tx.cart.findUnique({
-                where: {userId},
+                where: { userId },
                 include: {
                     CartItem: {
                         include: {
@@ -17,8 +17,10 @@ export class OrderService {
                 },
             });
 
-            if(!cart || cart.CartItem.length === 0){
-                throw new Error("O carrinho está vazio. Não é possível criar o pedido.");
+            if (!cart || cart.CartItem.length === 0) {
+                throw new Error(
+                    "O carrinho está vazio. Não é possível criar o pedido."
+                );
             }
 
             const order = await tx.order.create({
@@ -29,11 +31,13 @@ export class OrderService {
 
             const orderItemsData: any[] = [];
 
-            for(const item of cart.CartItem){
+            for (const item of cart.CartItem) {
                 const product = item.product;
 
-                if (product.stock < item.quantity){
-                    throw new Error(`Estoque insuficiente para o produto: ${product.name}. Apenas ${product.stock} em estoque.`);
+                if (product.stock < item.quantity) {
+                    throw new Error(
+                        `Estoque insuficiente para o produto: ${product.name}. Apenas ${product.stock} em estoque.`
+                    );
                 }
                 orderItemsData.push({
                     orderId: order.id,
@@ -43,25 +47,25 @@ export class OrderService {
                 });
 
                 await tx.product.update({
-                    where: {id: product.id},
+                    where: { id: product.id },
                     data: {
                         stock: {
-                            decrement: item.quantity, 
+                            decrement: item.quantity,
                         },
                     },
                 });
-            } 
+            }
 
             await tx.orderItem.createMany({
                 data: orderItemsData,
             });
 
             await tx.cart.delete({
-                where: {userId},
+                where: { userId },
             });
 
             return order;
-        }); 
+        });
     }
 
     async getAllOrders(skip: number, take: number) {
@@ -71,10 +75,10 @@ export class OrderService {
             take: take,
             include: {
                 user: {
-                    select: {id: true, name: true, email: true}
+                    select: { id: true, name: true, email: true },
                 },
                 OrderItem: true,
-            }
+            },
         });
 
         return {
@@ -82,7 +86,7 @@ export class OrderService {
             meta: {
                 totalItems,
                 limit: take,
-                currentPage: (skip / take) + 1,
+                currentPage: skip / take + 1,
                 totalPages: Math.ceil(totalItems / take),
             },
         };
@@ -107,15 +111,15 @@ export class OrderService {
         });
     }
 
-    async restoreStock(orderId: number, tx: any){
+    async restoreStock(orderId: number, tx: any) {
         const orderItems = await tx.orderItem.findMany({
-            where: {orderId: orderId}
+            where: { orderId: orderId },
         });
 
-        for(const item of orderItems){
+        for (const item of orderItems) {
             await tx.product.update({
-                where: {id: item.productId},
-                data : {
+                where: { id: item.productId },
+                data: {
                     stock: {
                         increment: item.quantity,
                     },
@@ -124,25 +128,25 @@ export class OrderService {
         }
     }
 
-    async updateOrderStatus(orderId: number, newStatus: string){
+    async updateOrderStatus(orderId: number, newStatus: string) {
         return prismaClient.$transaction(async (tx) => {
             const order = await tx.order.findUnique({
-                where: {orderId},
+                where: { orderId },
             });
 
-            if(!order){
+            if (!order) {
                 throw new Error(`Pedido com ID ${orderId} não encontrado`);
             }
 
             const updatedOrder = await tx.order.update({
-                where: {orderId},
-                data: {status: newStatus},
-                include:{
+                where: { orderId },
+                data: { status: newStatus },
+                include: {
                     OrderItem: true,
                 },
             });
 
-            if(newStatus === "CANCELED" && order.status !== "CANCELED"){
+            if (newStatus === "CANCELED" && order.status !== "CANCELED") {
                 await this.restoreStock(orderId, tx);
                 console.log(`Estoque restaurado para o Pedido ${orderId}.`);
             }

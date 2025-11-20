@@ -1,21 +1,29 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OrderService } from "../services/OrderService.js";
 import prismaClient from "../prisma/index.js";
-import { PaginationSchema, PaginationDTO } from "../dtos/product/PaginationDTO.js";
+import {
+    PaginationSchema,
+    PaginationDTO,
+} from "../dtos/product/PaginationDTO.js";
 
 const orderService = new OrderService();
 
-interface AuthenticatedRequest extends FastifyRequest{
-    user?: {id:number; role: string};
+interface AuthenticatedRequest extends FastifyRequest {
+    user?: { id: number; role: string };
 }
 
 export class OrderController {
     async createOrder(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
             const userId = req.user?.id;
-            
-            if(!userId){
-                return reply.code(401).send({message: "Usuario não autentificado. o Middleware falhou"});
+
+            if (!userId) {
+                return reply
+                    .code(401)
+                    .send({
+                        message:
+                            "Usuario não autentificado. o Middleware falhou",
+                    });
             }
 
             const orderData = req.body as any;
@@ -23,36 +31,38 @@ export class OrderController {
             const order = await orderService.createOrder(userId, orderData);
 
             reply.code(201).send(order);
-        }catch(error: any){
-            const isLogicError = error.message.includes("Estoque") || error.message.includes("carrinho");
-            const statusCode = isLogicError ? 400: 500;
+        } catch (error: any) {
+            const isLogicError =
+                error.message.includes("Estoque") ||
+                error.message.includes("carrinho");
+            const statusCode = isLogicError ? 400 : 500;
 
-            reply.code(statusCode).send({message: error.message});
+            reply.code(statusCode).send({ message: error.message });
         }
     }
 
-    async listUserOrders(userId: number){
+    async listUserOrders(userId: number) {
         return prismaClient.order.findMany({
-            where: {userId},
-            orderBy: {createdAt: "desc"},
+            where: { userId },
+            orderBy: { createdAt: "desc" },
             include: {
-                OrderItem:{
-                    include:{
+                OrderItem: {
+                    include: {
                         product: True,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
-    } 
+    }
 
-    async listMyOrders(req: AuthenticatedRequest, reply: FastifyReply){
-        try{
+    async listMyOrders(req: AuthenticatedRequest, reply: FastifyReply) {
+        try {
             const userId = req.user?.id;
-            if(!userId){
-                return reply.code(401).send({message: error.message});
+            if (!userId) {
+                return reply.code(401).send({ message: error.message });
             }
-        }catch (error: any){
-            reply.code(500).send({message: error.message});
+        } catch (error: any) {
+            reply.code(500).send({ message: error.message });
         }
     }
 
@@ -60,7 +70,7 @@ export class OrderController {
         try {
             const validationResult = PaginationSchema.safeParse(request.query);
 
-            if(!validationResult.success){
+            if (!validationResult.success) {
                 return reply.status(400).send({
                     error: "Parâmetros de paginação inválidos.",
                     details: validationResult.error.issues,
@@ -69,7 +79,7 @@ export class OrderController {
 
             const { page, limit } = validationResult.data;
             const skip = (page - 1) * limit;
-            const result = await this.orderService.getAllOrders(skip, limit); 
+            const result = await this.orderService.getAllOrders(skip, limit);
 
             reply.status(200).send(result);
         } catch (error: any) {
@@ -95,16 +105,22 @@ export class OrderController {
         }
     }
 
-    async updateStatus(req: FastifyRequest<{ Params: {id:string}}>, reply: FastifyReply){
-        try{
+    async updateStatus(
+        req: FastifyRequest<{ Params: { id: string } }>,
+        reply: FastifyReply
+    ) {
+        try {
             const orderId = parseInt(req.params.id, 10);
-            const {status} = req.body as {status: string};
-            const updatedOrder = await orderService.updateOrderStatus(orderId, status);
+            const { status } = req.body as { status: string };
+            const updatedOrder = await orderService.updateOrderStatus(
+                orderId,
+                status
+            );
 
             reply.code(200).send(updatedOrder);
-        }catch(error: any){
-            const statusCode = error.message.incluides("not found") ? 400:500;
-            reply.code(statusCode).send({message: error.message});
+        } catch (error: any) {
+            const statusCode = error.message.incluides("not found") ? 400 : 500;
+            reply.code(statusCode).send({ message: error.message });
         }
     }
 

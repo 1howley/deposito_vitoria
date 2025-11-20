@@ -1,14 +1,14 @@
 import type { CreateUserDTO } from "../dtos/user/CreateUserDTO.js";
 import prismaClient from "../prisma/index.js";
-import * as bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import * as bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const SALT_ROUNDS = 10;
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sua-chave-secreta-padrao-forte'; 
-const JWT_EXPIRES_IN = '1d'; // Expira em 1 dia
+const JWT_SECRET = process.env.JWT_SECRET || "sua-chave-secreta-padrao-forte";
+const JWT_EXPIRES_IN = "1d"; // Expira em 1 dia
 export class UserService {
-    async createUser(user: CreateUserDTO) {
+    async createUser(userData: CreateUserDTO) {
         const { email, password, name, authProvider } = userData;
 
         if (!email) {
@@ -16,10 +16,10 @@ export class UserService {
         }
 
         const exisingUser = await prismaClient.user.findUnique({
-            where: {email},
+            where: { email },
         });
 
-        if(exisingUser){
+        if (exisingUser) {
             throw new Error("Usuário com este email já existe.");
         }
 
@@ -35,13 +35,13 @@ export class UserService {
         });
 
         // Omitir a senha no retorno
-        const {password: userPassword, ...userWithoutPassword} = userCreated;
+        const { password: userPassword, ...userWithoutPassword } = userCreated;
         return userWithoutPassword;
     }
 
-    async loginUser(email: string, password: string){
+    async loginUser(email: string, password: string) {
         const user = await prismaClient.user.findUnique({
-            where: {email},
+            where: { email },
             select: {
                 id: true,
                 email: true,
@@ -50,25 +50,22 @@ export class UserService {
             },
         });
 
-        if(!user){
+        if (!user) {
             throw new Error("Credenciais Inválidas");
         }
 
         const isPasswordvalid = await bcrypt.compare(password, user.password);
 
-        if(!isPasswordvalid){
+        if (!isPasswordvalid) {
             throw new Error("Credenciais Inválidas");
         }
 
-        const token = jwt.sign(
-            {userId: user.id},
-            JWT_SECRET,
-            {expiresIn: JWT_EXPIRES_IN}
-        );
-
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+            expiresIn: JWT_EXPIRES_IN,
+        });
 
         //Omitir senha no retorno
-        const {password, ...userWithoutPassword} = user;
+        const { ...userWithoutPassword } = user;
         return {
             user: userWithoutPassword,
             token: token,
@@ -81,7 +78,7 @@ export class UserService {
         const users = await prismaClient.user.findMany({
             skip: skip,
             take: take,
-            select:{
+            select: {
                 id: true,
                 email: true,
                 name: true,
@@ -93,11 +90,10 @@ export class UserService {
             meta: {
                 totalItems,
                 limit: take,
-                currentPage: (skip/take) + 1,
-                totalPages: Math.ceil(totalItems/take),
+                currentPage: skip / take + 1,
+                totalPages: Math.ceil(totalItems / take),
             },
         };
     }
 }
 
-export { UserService };

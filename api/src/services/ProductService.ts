@@ -22,8 +22,8 @@ export class ProductService {
             meta: {
                 totalItems,
                 limit: take,
-                currentPage: (skip/take) + 1,
-                totalPages: Math.ceil(totalItems/take),
+                currentPage: skip / take + 1,
+                totalPages: Math.ceil(totalItems / take),
             },
         };
     }
