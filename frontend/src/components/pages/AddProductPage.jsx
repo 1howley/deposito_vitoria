@@ -9,7 +9,7 @@ import { Label } from '../atoms/label';
 import { Textarea } from '../atoms/textarea';
 
 const AddProductPage = () => {
-    const { user } = useAuth();
+    const { user, firebaseUser } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -35,7 +35,9 @@ const AddProductPage = () => {
                 basePrice: parseFloat(formData.basePrice),
                 stock: parseInt(formData.stock, 10),
             };
-            await ProductService.create(dataToSubmit);
+            const token = await firebaseUser.getIdToken();
+            console.log(token)
+            await ProductService.create(dataToSubmit, token);
             alert('Product added successfully!');
             setFormData({
                 name: '',

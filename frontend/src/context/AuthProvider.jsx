@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
     }, []); // O useEffect roda apenas na montagem e desmontagem
 
     // O valor do contexto AGORA expõe o 'user' com a role do backend
-    const value = { user, loading };
+    const value = { user, loading, firebaseUser };
 
     return (
         <AuthContext.Provider value={value}>
