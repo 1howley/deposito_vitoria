@@ -1,11 +1,45 @@
-import { useOutletContext } from "react-router"; // Hook para receber o contexto do Layout
+import { useOutletContext } from "react-router";
 import { HeroSection } from "../organisms/HeroSection";
 import { CategorySection } from "../organisms/CategorySection";
 import { ProductCard } from "../molecules/ProductCard";
+import { ProductService } from "../../services/products/ProductService";
+import { useEffect, useState } from "react";
+import { Skeleton } from "../atoms/skeleton";
 
-export function Dashboard({ featuredProducts, categories }) {
-    // Recebe a função addToCart do context do Layout
+export function Dashboard() {
     const { addToCart } = useOutletContext();
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                const productResponse = await ProductService.getAll();
+                const products = productResponse.products || [];
+                setFeaturedProducts(products.slice(0, 6)); // Get first 6 for featured section
+
+                const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+                const categoryData = uniqueCategories.map(name => ({
+                    id: name.toLowerCase().replace(/\s+/g, '-'),
+                    name,
+                    productCount: products.filter(p => p.category === name).length,
+                    // Mock image, replace with real data if available
+                    image: `https://source.unsplash.com/400x300/?${name}`
+                }));
+                setCategories(categoryData);
+
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     const scrollToProducts = () => {
         document
             .getElementById("products")
@@ -32,15 +66,23 @@ export function Dashboard({ featuredProducts, categories }) {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                        {featuredProducts.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                onAddToCart={addToCart} // Usando a função do contexto
-                            />
-                        ))}
-                    </div>
+                    {isLoading ? (
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <Skeleton key={index} className="h-96 w-full" />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                            {featuredProducts.map((product) => (
+                                <ProductCard
+                                    key={product.productId}
+                                    product={product}
+                                    onAddToCart={addToCart}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
         </>

@@ -1,6 +1,7 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ProductCard } from "../molecules/ProductCard"; // O tipo 'Product' e caminho foram ajustados
+import { ProductCard } from "../molecules/ProductCard"; 
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
@@ -12,22 +13,51 @@ import {
     SelectValue,
 } from "../atoms/select";
 import { Search, Grid, List, ArrowLeft } from "lucide-react";
+import { ProductService } from "../../services/products/ProductService";
+import { Skeleton } from "../atoms/skeleton";
+import { ImageWithFallback } from "../atoms/ImageWithFallback";
 
-export function CatalogPage({ products, categories, onAddToCart }) {
+export function CatalogPage({ onAddToCart }) {
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
     const [viewMode, setViewMode] = useState("grid");
-    // Use o hook para navegação
     const navigate = useNavigate();
-    // Filter and sort products
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setIsLoading(true);
+                const response = await ProductService.getAll();
+                setProducts(response.products);
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+                // Handle error state if necessary
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    const categories = [...new Set(products.map(p => p.category).filter(Boolean))].map(category => ({
+      name: category,
+      // This count is not entirely correct if a product can have multiple categories.
+      // For now, we assume one category per product.
+      count: products.filter(p => p.category === category).length
+    }));
+
+
     const filteredProducts = products
         .filter((product) => {
             const matchesSearch =
                 product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.description
+                (product.description && product.description
                     .toLowerCase()
-                    .includes(searchTerm.toLowerCase());
+                    .includes(searchTerm.toLowerCase()));
             const matchesCategory =
                 selectedCategory === "all" ||
                 product.category === selectedCategory;
@@ -36,9 +66,9 @@ export function CatalogPage({ products, categories, onAddToCart }) {
         .sort((a, b) => {
             switch (sortBy) {
                 case "price-low":
-                    return a.price - b.price;
+                    return a.basePrice - b.basePrice;
                 case "price-high":
-                    return b.price - a.price;
+                    return b.basePrice - a.basePrice;
                 case "name":
                     return a.name.localeCompare(b.name);
                 default:
@@ -51,13 +81,12 @@ export function CatalogPage({ products, categories, onAddToCart }) {
         ...categories.map((cat) => ({
             id: cat.name,
             name: cat.name,
-            count: products.filter((p) => p.category === cat.name).length,
+            count: cat.count,
         })),
     ];
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
             <div className="bg-white border-b sticky top-0 z-40">
                 <div className="container mx-auto px-4 py-4 md:py-6">
                     <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
@@ -79,9 +108,7 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                         </div>
                     </div>
 
-                    {/* Search and Filters */}
                     <div className="space-y-3 md:space-y-0 md:flex md:gap-4">
-                        {/* Search */}
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                             <Input
@@ -92,7 +119,6 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                             />
                         </div>
 
-                        {/* Mobile filters row */}
                         <div className="grid grid-cols-2 gap-2 md:hidden">
                             <Select
                                 value={selectedCategory}
@@ -131,7 +157,6 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                             </Select>
                         </div>
 
-                        {/* Desktop filters */}
                         <div className="hidden md:flex md:gap-4">
                             <Select
                                 value={selectedCategory}
@@ -170,7 +195,6 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                             </Select>
                         </div>
 
-                        {/* View Mode */}
                         <div className="flex bg-muted rounded-lg p-1 self-start">
                             <Button
                                 variant={
@@ -199,9 +223,20 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                 </div>
             </div>
 
-            {/* Products */}
             <div className="container mx-auto px-4 py-6 md:py-8">
-                {filteredProducts.length === 0 ? (
+                {isLoading ? (
+                    <div
+                        className={
+                            viewMode === 'grid'
+                                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
+                                : 'space-y-3 md:space-y-4'
+                        }
+                    >
+                        {Array.from({ length: 8 }).map((_, index) => (
+                            <Skeleton key={index} className="h-64 w-full" />
+                        ))}
+                    </div>
+                ) : filteredProducts.length === 0 ? (
                     <div className="text-center py-12 md:py-16">
                         <p className="text-muted-foreground text-base md:text-lg">
                             Nenhum produto encontrado
@@ -221,20 +256,22 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                         {filteredProducts.map((product) =>
                             viewMode === "grid" ? (
                                 <ProductCard
-                                    key={product.id}
+                                    key={product.productId}
                                     product={product}
                                     onAddToCart={onAddToCart}
                                 />
                             ) : (
                                 <div
-                                    key={product.id}
+                                    key={product.productId}
                                     className="bg-white rounded-lg border p-3 md:p-4 flex items-center gap-3 md:gap-4"
                                 >
-                                    <img
+                                    <ImageWithFallback
                                         src={product.image}
+                                        fallback="src/assets/loguinho.jpg"
                                         alt={product.name}
                                         className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg shrink-0"
                                     />
+
                                     <div className="flex-1 min-w-0">
                                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 md:gap-4">
                                             <div className="min-w-0 flex-1">
@@ -258,33 +295,19 @@ export function CatalogPage({ products, categories, onAddToCart }) {
                                                                 style: "currency",
                                                                 currency: "BRL",
                                                             }
-                                                        ).format(product.price)}
+                                                        ).format(product.basePrice)}
                                                     </span>
-                                                    {product.originalPrice && (
-                                                        <span className="text-xs md:text-sm text-muted-foreground line-through">
-                                                            {new Intl.NumberFormat(
-                                                                "pt-BR",
-                                                                {
-                                                                    style: "currency",
-                                                                    currency:
-                                                                        "BRL",
-                                                                }
-                                                            ).format(
-                                                                product.originalPrice
-                                                            )}
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </div>
                                             <Button
                                                 onClick={() =>
                                                     onAddToCart(product)
                                                 }
-                                                disabled={!product.inStock}
+                                                disabled={product.stock <= 0}
                                                 className="shrink-0 w-full sm:w-auto text-xs md:text-sm"
                                                 size="sm"
                                             >
-                                                {product.inStock
+                                                {product.stock > 0
                                                     ? "Adicionar"
                                                     : "Indisponível"}
                                             </Button>

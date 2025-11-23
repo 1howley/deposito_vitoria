@@ -9,21 +9,23 @@ export const CreateProductSchema = z.object({
 
     description: z.string().optional(),
 
-    price: z
+    basePrice: z
         .number({
             error: "O preço é obrigatório e deve ser um número.",
+            invalid_type_error: "O preço deve ser um número.",
         })
         .positive("O preço deve ser maior que zero."),
 
     stock: z
         .number({
-            error:
-                "O estoque é obrigatório e deve ser um número inteiro.",
+            error: "O estoque é obrigatório e deve ser um número inteiro.",
+            invalid_type_error: "O estoque deve ser um número inteiro.",
         })
         .int("O estoque deve ser um número inteiro.")
         .min(0, "O estoque não pode ser negativo."),
 
-    categoryId: z.number().int().optional(),
+    brand: z.string().optional(),
+    category: z.string().optional(),
 });
 
 export type CreateProductDTO = z.infer<typeof CreateProductSchema>;

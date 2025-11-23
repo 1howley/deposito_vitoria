@@ -30,7 +30,12 @@ const AddProductPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await ProductService.create(formData);
+            const dataToSubmit = {
+                ...formData,
+                basePrice: parseFloat(formData.basePrice),
+                stock: parseInt(formData.stock, 10),
+            };
+            await ProductService.create(dataToSubmit);
             alert('Product added successfully!');
             setFormData({
                 name: '',
