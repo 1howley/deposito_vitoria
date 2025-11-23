@@ -44,7 +44,7 @@ const UserMenu = React.forwardRef((props, ref) => {
                 </div>
                 <div className="user-info flex flex-col">
                     <span className="user-name font-bold text-lg text-gray-900">
-                        {user.displayName}
+                        {user.name}
                     </span>
                 </div>
             </div>
