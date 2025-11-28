@@ -62,22 +62,22 @@ const UserMenu = React.forwardRef((props, ref) => {
                     </Link>
 
                     <li>
-                        <a
-                            href="#"
+                        <Link
+                            to="/profile?section=orders"
                             className="block py-2 px-6 text-base text-gray-800 
                                               transition-colors duration-200 hover:bg-gray-100"
                         >
                             Pedidos
-                        </a>
+                        </Link>
                     </li>
                     <li>
-                        <a
-                            href="#"
+                        <Link
+                            to="/profile?section=favorites"
                             className="block py-2 px-6 text-base text-gray-800 
                                               transition-colors duration-200 hover:bg-gray-100"
                         >
                             Favoritos
-                        </a>
+                        </Link>
                     </li>
                     <li>
                         <button

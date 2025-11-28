@@ -11,19 +11,31 @@ import {
   Crown,
   ChevronRight,
   Menu,
-  Info,
-  MapPin
+  Info
 } from "lucide-react";
 import { Button } from "../atoms/button";
 import { 
     Sheet, 
     SheetContent, 
 } from "../atoms/sheet"; 
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogFooter,
+    DialogDescription,
+    DialogClose
+} from "../atoms/dialog"; 
+import { Input } from "../atoms/input";
+import { Label } from "../atoms/label";
 import { useAuth } from "../../hooks/useAuth"; 
+import { toast } from "sonner";
+import { useSearchParams } from "react-router"; // <-- Importação crucial
 
 // Função auxiliar para o conteúdo principal
-const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user }) => {
-  // Botão voltar comum para todas as sub-páginas
+const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user, onEdit }) => {
+  
   const BackButton = () => (
     <button 
       onClick={() => setActiveSection("profile")}
@@ -48,9 +60,12 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
                 <span className="font-bold text-foreground">Nome</span>
               </div>
               <div className="flex-1 text-muted-foreground uppercase">
-                {user?.name || "CELIO HENRIQUE PIMENTA JUNIOR"}
+                {user?.name || "NOME NÃO INFORMADO"}
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button 
+                onClick={() => onEdit("name", "Nome Completo", user?.name)}
+                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
+              >
                 editar
               </button>
             </div>
@@ -64,7 +79,7 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
                 <p className="text-muted-foreground">136.***.***-76</p>
                 <p className="text-xs text-muted-foreground/60 mt-1">Este dado não pode ser alterado</p>
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer">
                 mostrar
               </button>
             </div>
@@ -78,14 +93,14 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
               <div className="flex-1 text-muted-foreground">
                 --/--/----
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer">
                 editar
               </button>
             </div>
           </div>
         </div>
       );
-
+    
     case "contacts":
       return (
         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -99,9 +114,12 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
                 <span className="font-bold text-foreground">e-mail</span>
               </div>
               <div className="flex-1 text-muted-foreground">
-                {user?.email || "killatomic3434@gmail.com"}
+                {user?.email || "email@exemplo.com"}
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button 
+                onClick={() => onEdit("email", "E-mail", user?.email)}
+                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
+              >
                 editar
               </button>
             </div>
@@ -115,21 +133,27 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
               <div className="flex-1 text-muted-foreground">
                 (31) 99702-8696
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button 
+                onClick={() => onEdit("phone", "Celular", "(31) 99702-8696")}
+                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
+              >
                 editar
               </button>
             </div>
 
-            {/* Preferências de contato */}
+            {/* Preferências */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
               <div className="w-full md:w-1/4 mb-2 md:mb-0 flex items-center gap-2">
                 <span className="font-bold text-foreground">Preferências de contato</span>
                 <Info className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1 text-muted-foreground">
-                {/* Espaço vazio conforme imagem */}
+                Receber ofertas por WhatsApp
               </div>
-              <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0">
+              <button 
+                onClick={() => toast.info("Configuração de preferências em breve")}
+                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
+              >
                 editar
               </button>
             </div>
@@ -152,7 +176,7 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
             Mantenha sua senha sempre atualizada. Clique abaixo para alterar sua senha
           </p>
 
-          <Button className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg rounded-md font-bold shadow-sm">
+          <Button className="w-full md:w-auto px-8 py-6 text-lg rounded-md font-bold shadow-sm">
             Alterar Senha
           </Button>
         </div>
@@ -166,13 +190,13 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
 
           <div className="flex flex-col items-center justify-center py-12">
             {/* Ilustração Placeholder */}
-            <div className="mb-6 bg-gray-100 rounded-full p-8">
-                <Home className="w-24 h-24 text-gray-300" strokeWidth={1} />
+            <div className="mb-6 bg-muted/30 rounded-full p-8">
+                <Home className="w-24 h-24 text-muted-foreground/50" strokeWidth={1} />
             </div>
             
             <p className="text-primary font-bold mb-8 text-lg">Sem endereço cadastrado</p>
 
-            <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-6 font-bold rounded-md">
+            <Button className="px-6 py-6 font-bold rounded-md">
               Adicionar novo endereço
             </Button>
           </div>
@@ -181,19 +205,19 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
 
     case "orders":
       return (
-        <div>
+        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+          <BackButton />
           <h2 className="text-2xl font-bold mb-8">Meus Pedidos</h2>
           <p>Aqui você verá a lista dos seus pedidos.</p>
-          <Button onClick={() => setActiveSection("profile")} variant="outline" className="mt-4">Voltar</Button>
         </div>
       );
       
     case "favorites":
       return (
-        <div>
+        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+          <BackButton />
           <h2 className="text-2xl font-bold mb-8">Favoritos</h2>
           <p>Aqui você verá seus produtos favoritados.</p>
-          <Button onClick={() => setActiveSection("profile")} variant="outline" className="mt-4">Voltar</Button>
         </div>
       );
 
@@ -208,7 +232,6 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
 
     case "profile":
     default:
-      // Layout do Meu Perfil (Cards)
       return (
         <>
           <h2 className="text-2xl font-bold mb-8">Meu Perfil</h2>
@@ -246,8 +269,7 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
               <div>
                 <h3 className="font-semibold mb-1">Informações do Cliente</h3>
                 <p className="text-sm text-muted-foreground">
-                  Mantenha seus dados sempre atualizados para garantir que você receba 
-                  todas as informações sobre seus pedidos e promoções exclusivas.
+                  Mantenha seus dados sempre atualizados.
                 </p>
               </div>
             </div>
@@ -260,9 +282,39 @@ const RenderMainContent = ({ activeSection, setActiveSection, profileCards, user
 
 export function UserProfilePage({ onBack }) {
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState("profile");
-  const [isFidelityOpen, setIsFidelityOpen] = useState(true); 
+  
+  // 1. LEITURA DO PARÂMETRO DA URL
+  const [searchParams] = useSearchParams();
+  const urlSection = searchParams.get('section') || 'profile';
+
+  // 2. ESTADOS
+  const [activeSection, setActiveSection] = useState(urlSection);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingField, setEditingField] = useState({ key: "", label: "", value: "" });
+  const [tempValue, setTempValue] = useState("");
+
+  // 3. SINCRONIZAR ESTADO COM A URL
+  React.useEffect(() => {
+    // Atualiza o activeSection se a URL mudar (ex: ao clicar no link "Pedidos" do menu flutuante)
+    if (activeSection !== urlSection) {
+        setActiveSection(urlSection);
+    }
+  }, [searchParams, urlSection, activeSection]);
+  
+  // Lógica de Edição (Modal)
+  const handleEditClick = (key, label, currentValue) => {
+    setEditingField({ key, label, value: currentValue || "" });
+    setTempValue(currentValue || "");
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    // Simulação de salvamento
+    console.log(`Salvando ${editingField.key}: ${tempValue}`);
+    toast.success(`${editingField.label} atualizado com sucesso!`);
+    setIsEditModalOpen(false);
+  };
 
   // Definição dos dados
   const menuItems = [
@@ -281,72 +333,73 @@ export function UserProfilePage({ onBack }) {
 
 
   // Conteúdo do Menu lateral
-  const renderSidebarContent = (isMobile = false) => (
-    <div className="h-full">
-        
-        {/* TOP USER SECTION */}
-        <div className={`flex flex-col items-start gap-4 mb-6 pb-6 border-b ${isMobile ? "p-4 pt-8" : "p-6 pt-8"}`}> 
-            <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center relative flex-shrink-0">
-                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : "C"}
+  const renderSidebarContent = (isMobile = false) => {
+    // Para ter certeza que a seção 'orders' ou 'favorites' está ativa
+    const currentActiveSection = urlSection; 
+
+    return (
+        <div className="h-full">
+            
+            {/* TOP USER SECTION */}
+            <div className={`flex flex-col items-start gap-4 mb-6 pb-6 border-b ${isMobile ? "p-4 pt-8" : "p-6 pt-8"}`}> 
+                <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center relative flex-shrink-0">
+                        <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                          {user?.name ? user.name.charAt(0).toUpperCase() : "C"}
+                        </div>
+                        <div className="absolute bottom-0 right-0 size-5 rounded-full bg-purple-500 flex items-center justify-center text-xs text-white">
+                          P
+                        </div>
                     </div>
-                    <div className="absolute bottom-0 right-0 size-5 rounded-full bg-purple-500 flex items-center justify-center text-xs text-white">
-                      P
+                    <div>
+                      <p className="font-semibold text-lg">{user?.name || "CÉLIO"}</p>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <span className="font-bold text-primary">0</span> pts
+                      </div>
                     </div>
-                </div>
-                <div>
-                  <p className="font-semibold text-lg">{user?.name || "CÉLIO"}</p>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <span className="font-bold text-primary">0</span> pts
-                  </div>
                 </div>
             </div>
-        </div>
 
-        {/* NAVIGATION LINKS SECTION */}
-        <div className="px-6 pb-6">
-            <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-4 px-3">
-                Minha Conta
-            </h3>
-            <nav className="space-y-1">
-                {menuItems.map((item) => {
-                    const isActive = activeSection === item.id || (
-                        (activeSection === "personal-data" || 
-                         activeSection === "contacts" || 
-                         activeSection === "access-data" || 
-                         activeSection === "addresses" ||
-                         activeSection === "preferences") 
-                        && item.id === "profile"
-                    );
+            {/* NAVIGATION LINKS SECTION */}
+            <div className="px-6 pb-6">
+                <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-4 px-3">
+                    Minha Conta
+                </h3>
+                <nav className="space-y-1">
+                    {menuItems.map((item) => {
+                        // Lógica de Ativação: Ativa o item se o ID corresponder ou se estiver em uma das sub-páginas do 'profile'
+                        const isActive = currentActiveSection === item.id || (
+                            (currentActiveSection !== 'orders' && currentActiveSection !== 'favorites' && item.id === 'profile')
+                        );
 
-                    return (
-                        <div key={item.id}>
-                            <button
-                                onClick={() => {
-                                    setActiveSection(item.id);
-                                    if (isMobile) {
-                                        setIsMobileMenuOpen(false); 
-                                    }
-                                }}
-                                className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
-                                    isActive
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-foreground hover:bg-muted"
-                                }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <item.icon className="h-4 w-4" />
-                                    <span className="text-sm font-medium">{item.label}</span>
-                                </div>
-                            </button>
-                        </div>
-                    );
-                })}
-            </nav>
+                        return (
+                            <div key={item.id}>
+                                <button
+                                    onClick={() => {
+                                        setActiveSection(item.id);
+                                        if (isMobile) {
+                                            setIsMobileMenuOpen(false); 
+                                        }
+                                    }}
+                                    className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+                                        (currentActiveSection === item.id) 
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-foreground hover:bg-muted"
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <item.icon className="h-4 w-4" />
+                                        <span className="text-sm font-medium">{item.label}</span>
+                                    </div>
+                                </button>
+                            </div>
+                        );
+                    })}
+                </nav>
+            </div>
         </div>
-    </div>
-  );
+    );
+  };
 
 
   return (
@@ -410,12 +463,44 @@ export function UserProfilePage({ onBack }) {
                 setActiveSection={setActiveSection}
                 profileCards={profileCards} 
                 user={user}
+                onEdit={handleEditClick}
               />
 
             </div>
           </main>
         </div>
       </div>
+
+      {/* MODAL DE EDIÇÃO (DIALOG) */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar {editingField.label}</DialogTitle>
+            <DialogDescription>
+              Faça as alterações necessárias e clique em salvar.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid w-full gap-2">
+              <Label htmlFor="edit-input">{editingField.label}</Label>
+              <Input 
+                id="edit-input" 
+                value={tempValue} 
+                onChange={(e) => setTempValue(e.target.value)}
+                placeholder={`Digite seu novo ${editingField.label.toLowerCase()}`}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <DialogClose asChild>
+                <Button variant="outline" type="button">Cancelar</Button>
+            </DialogClose>
+            <Button type="submit" onClick={handleSave}>Salvar alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
