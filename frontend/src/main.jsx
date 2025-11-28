@@ -12,6 +12,7 @@ import { ToolsPage } from "./components/pages/ToolsPage";
 import { PaintsPage } from "./components/pages/PaintsPage";
 import { AuthProvider } from "./context/AuthProvider";
 import AddProductPage from "./components/pages/AddProductPage";
+import { CheckoutPage } from "./components/pages/CheckoutPage";
 
 createRoot(document.getElementById("root")).render(
     <AuthProvider>
@@ -32,6 +33,7 @@ createRoot(document.getElementById("root")).render(
                     <Route path="add-product" element={<AddProductPage />} />
                     <Route path="tools" element={<ToolsPage/>}/>
                     <Route path="paints" element={<PaintsPage/>}/>
+                    <Route path="checkout" element={<CheckoutPage/>}/>
                 </Route>
                 <Route path="login" element={<LoginPage />} />
             </Routes>
