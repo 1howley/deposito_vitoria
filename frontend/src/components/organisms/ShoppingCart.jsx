@@ -1,4 +1,4 @@
-import { Minus, Plus, Trash2, X } from "lucide-react";
+import { Link, Minus, Plus, Trash2, X } from "lucide-react";
 import { Button } from "../atoms/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../atoms/sheet";
 import { Badge } from "../atoms/badge";
@@ -139,13 +139,15 @@ export function ShoppingCart({
                                         {formatPrice(total)}
                                     </span>
                                 </div>
-
+                                <Link to="Checkout">
                                 <Button
                                     onClick={onCheckout}
                                     className="w-full h-12"
                                 >
                                     Finalizar Compra
                                 </Button>
+                                </Link>
+                                
 
                                 <Button
                                     variant="outline"
