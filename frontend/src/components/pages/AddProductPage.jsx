@@ -56,7 +56,7 @@ const AddProductPage = () => {
     if (user?.role !== 'ADMIN') {
         return (
             <div className="flex items-center justify-center h-full">
-                <p>You are not authorized to view this page.</p>
+                <p>Você não está autorizado a ver essa página.</p>
             </div>
         );
     }
@@ -65,12 +65,12 @@ const AddProductPage = () => {
         <div className="flex justify-center items-center h-full p-4">
             <Card className="w-full max-w-lg">
                 <CardHeader>
-                    <CardTitle>Add New Product</CardTitle>
+                    <CardTitle>Adicionar novo produto</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <Label htmlFor="name">Product Name</Label>
+                            <Label htmlFor="name">Nome do Produto</Label>
                             <Input
                                 id="name"
                                 name="name"
@@ -80,7 +80,7 @@ const AddProductPage = () => {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">Descrição</Label>
                             <Textarea
                                 id="description"
                                 name="description"
@@ -89,7 +89,7 @@ const AddProductPage = () => {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="basePrice">Price</Label>
+                            <Label htmlFor="basePrice">Preço</Label>
                             <Input
                                 id="basePrice"
                                 name="basePrice"
@@ -100,7 +100,7 @@ const AddProductPage = () => {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="stock">Stock</Label>
+                            <Label htmlFor="stock">Estoque</Label>
                             <Input
                                 id="stock"
                                 name="stock"
@@ -111,7 +111,7 @@ const AddProductPage = () => {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="brand">Brand</Label>
+                            <Label htmlFor="brand">Marca</Label>
                             <Input
                                 id="brand"
                                 name="brand"
@@ -120,7 +120,7 @@ const AddProductPage = () => {
                             />
                         </div>
                         <div>
-                            <Label htmlFor="category">Category</Label>
+                            <Label htmlFor="category">Categoria</Label>
                             <Input
                                 id="category"
                                 name="category"
@@ -128,7 +128,7 @@ const AddProductPage = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <Button type="submit" className="w-full">Add Product</Button>
+                        <Button type="submit" className="w-full">Adicionar Produto</Button>
                     </form>
                 </CardContent>
             </Card>
