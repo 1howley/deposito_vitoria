@@ -186,7 +186,7 @@ export function Header({ cartCount, onCartClick }) {
                                     className="text-foreground hover:text-primary transition-colors font-medium"
                                     to="add-product"
                                 >
-                                    Add Product
+                                    Adicionar Produto
                                 </Link>
                             )}
                         </ul>
@@ -254,7 +254,7 @@ export function Header({ cartCount, onCartClick }) {
                                             to="/add-product"
                                             className="block py-2 px-3 text-foreground hover:text-primary transition-colors font-medium rounded-lg hover:bg-white/50"
                                         >
-                                            Add Product
+                                            Adicionar Produto
                                         </Link>
                                     </li>
                                 )}
