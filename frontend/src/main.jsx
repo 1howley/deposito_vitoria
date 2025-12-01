@@ -19,21 +19,15 @@ createRoot(document.getElementById("root")).render(
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Layout />}>
-                    <Route
-                        index
-                        element={<Dashboard />}
-                    />
-                    <Route
-                        path="catalog"
-                        element={<CatalogPage />}
-                    />
+                    <Route index element={<Dashboard />} />
+                    <Route path="catalog" element={<CatalogPage />} />
                     <Route path="sale" element={<SalePage />} />
                     <Route path="Profile" element={<UserProfilePage />} />
                     <Route path="basics" element={<BasicsPage />} />
                     <Route path="add-product" element={<AddProductPage />} />
-                    <Route path="tools" element={<ToolsPage/>}/>
-                    <Route path="paints" element={<PaintsPage/>}/>
-                    <Route path="checkout" element={<CheckoutPage/>}/>
+                    <Route path="tools" element={<ToolsPage />} />
+                    <Route path="paints" element={<PaintsPage />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
                 </Route>
                 <Route path="login" element={<LoginPage />} />
             </Routes>

@@ -140,14 +140,13 @@ export function ShoppingCart({
                                     </span>
                                 </div>
                                 <Link to="Checkout">
-                                <Button
-                                    onClick={onCheckout}
-                                    className="w-full h-12"
-                                >
-                                    Finalizar Compra
-                                </Button>
+                                    <Button
+                                        onClick={onCheckout}
+                                        className="w-full h-12"
+                                    >
+                                        Finalizar Compra
+                                    </Button>
                                 </Link>
-                                
 
                                 <Button
                                     variant="outline"

@@ -1,22 +1,21 @@
-
-import React, { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { ProductService } from '../../services/products/ProductService';
-import { Input } from '../atoms/input';
-import { Button } from '../atoms/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../atoms/card';
-import { Label } from '../atoms/label';
-import { Textarea } from '../atoms/textarea';
+import React, { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { ProductService } from "../../services/products/ProductService";
+import { Input } from "../atoms/input";
+import { Button } from "../atoms/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../atoms/card";
+import { Label } from "../atoms/label";
+import { Textarea } from "../atoms/textarea";
 
 const AddProductPage = () => {
     const { user, firebaseUser } = useAuth();
     const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        basePrice: '',
-        stock: '',
-        brand: '',
-        category: '',
+        name: "",
+        description: "",
+        basePrice: "",
+        stock: "",
+        brand: "",
+        category: "",
     });
 
     const handleChange = (e) => {
@@ -36,24 +35,24 @@ const AddProductPage = () => {
                 stock: parseInt(formData.stock, 10),
             };
             const token = await firebaseUser.getIdToken();
-            console.log(token)
+            console.log(token);
             await ProductService.create(dataToSubmit, token);
-            alert('Product added successfully!');
+            alert("Product added successfully!");
             setFormData({
-                name: '',
-                description: '',
-                basePrice: '',
-                stock: '',
-                brand: '',
-                category: '',
+                name: "",
+                description: "",
+                basePrice: "",
+                stock: "",
+                brand: "",
+                category: "",
             });
         } catch (error) {
-            console.error('Error adding product:', error);
-            alert('Failed to add product.');
+            console.error("Error adding product:", error);
+            alert("Failed to add product.");
         }
     };
 
-    if (user?.role !== 'ADMIN') {
+    if (user?.role !== "ADMIN") {
         return (
             <div className="flex items-center justify-center h-full">
                 <p>Você não está autorizado a ver essa página.</p>
@@ -128,7 +127,9 @@ const AddProductPage = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <Button type="submit" className="w-full">Adicionar Produto</Button>
+                        <Button type="submit" className="w-full">
+                            Adicionar Produto
+                        </Button>
                     </form>
                 </CardContent>
             </Card>

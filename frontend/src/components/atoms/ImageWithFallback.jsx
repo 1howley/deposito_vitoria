@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function ImageWithFallback({ src, fallbackSrc, ...props }) {
     const [imgSrc, setImgSrc] = useState(src);

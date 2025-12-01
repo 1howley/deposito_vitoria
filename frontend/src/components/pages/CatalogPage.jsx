@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ProductCard } from "../molecules/ProductCard"; 
+import { ProductCard } from "../molecules/ProductCard";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Badge } from "../atoms/badge";
@@ -43,21 +42,23 @@ export function CatalogPage({ onAddToCart }) {
         fetchProducts();
     }, []);
 
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))].map(category => ({
-      name: category,
-      // This count is not entirely correct if a product can have multiple categories.
-      // For now, we assume one category per product.
-      count: products.filter(p => p.category === category).length
+    const categories = [
+        ...new Set(products.map((p) => p.category).filter(Boolean)),
+    ].map((category) => ({
+        name: category,
+        // This count is not entirely correct if a product can have multiple categories.
+        // For now, we assume one category per product.
+        count: products.filter((p) => p.category === category).length,
     }));
-
 
     const filteredProducts = products
         .filter((product) => {
             const matchesSearch =
                 product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (product.description && product.description
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()));
+                (product.description &&
+                    product.description
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()));
             const matchesCategory =
                 selectedCategory === "all" ||
                 product.category === selectedCategory;
@@ -227,9 +228,9 @@ export function CatalogPage({ onAddToCart }) {
                 {isLoading ? (
                     <div
                         className={
-                            viewMode === 'grid'
-                                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
-                                : 'space-y-3 md:space-y-4'
+                            viewMode === "grid"
+                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                                : "space-y-3 md:space-y-4"
                         }
                     >
                         {Array.from({ length: 8 }).map((_, index) => (
@@ -295,7 +296,9 @@ export function CatalogPage({ onAddToCart }) {
                                                                 style: "currency",
                                                                 currency: "BRL",
                                                             }
-                                                        ).format(product.basePrice)}
+                                                        ).format(
+                                                            product.basePrice
+                                                        )}
                                                     </span>
                                                 </div>
                                             </div>

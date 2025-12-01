@@ -16,7 +16,7 @@ export function Header({ cartCount, onCartClick }) {
     const iconRef = useRef(null);
 
     const { user } = useAuth();
-    console.log(user)
+    console.log(user);
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
     };
@@ -169,13 +169,19 @@ export function Header({ cartCount, onCartClick }) {
                             >
                                 Materiais Básicos
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium" to="tools">
+                            <Link
+                                className="text-foreground hover:text-primary transition-colors font-medium"
+                                to="tools"
+                            >
                                 Ferramentas
                             </Link>
-                            <Link className="text-foreground hover:text-primary transition-colors font-medium" to="paints">
+                            <Link
+                                className="text-foreground hover:text-primary transition-colors font-medium"
+                                to="paints"
+                            >
                                 Tintas
                             </Link>
-                            {user?.role == 'ADMIN' && (
+                            {user?.role == "ADMIN" && (
                                 <Link
                                     className="text-foreground hover:text-primary transition-colors font-medium"
                                     to="add-product"
@@ -242,7 +248,7 @@ export function Header({ cartCount, onCartClick }) {
                                         Atendimento
                                     </a>
                                 </li>
-                                {user?.role === 'admin' && (
+                                {user?.role === "admin" && (
                                     <li>
                                         <Link
                                             to="/add-product"
