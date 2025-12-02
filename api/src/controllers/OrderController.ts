@@ -3,33 +3,39 @@ import { OrderService } from "../services/OrderService.js";
 import prismaClient from "../prisma/index.js";
 import {
     SearchPaginationSchema,
-    type SearchPaginationDTO,
 } from "../dtos/product/PaginationDTO.js";
+import type { CreateOrderDTO } from "../dtos/order/CreateOrderDTO.js";
 
-const orderService = new OrderService();
-
+// CORREÇÃO 1: Ajustando a interface para bater com o erro do Fastify/JWT
+// O erro dizia que faltava userId e email.
 interface AuthenticatedRequest extends FastifyRequest {
-    user?: { id: number; role: string };
+    user: {
+        userId: string;
+        email: string;
+        role: "ADMIN" | "CUSTOMER";
+    }
 }
 
 export class OrderController {
     private orderService = new OrderService();
+
     async createOrder(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
-            const userId = req.user?.id;
+            // CORREÇÃO: Pegando userId da tipagem correta
+            const userId = req.user?.userId;
 
             if (!userId) {
                 return reply
                     .code(401)
                     .send({
-                        message:
-                            "Usuario não autentificado. o Middleware falhou",
+                        message: "Usuário não autenticado. O Middleware falhou",
                     });
             }
 
-            const orderData = req.body as any;
+            // CORREÇÃO: Usando o DTO novo que criamos para o checkout
+            const orderData = req.body as CreateOrderDTO;
 
-            const order = await orderService.createOrder(userId, orderData);
+            const order = await this.orderService.createOrder(userId, orderData);
 
             reply.code(201).send(order);
         } catch (error: any) {
@@ -42,12 +48,16 @@ export class OrderController {
         }
     }
 
-    async listUserOrders(userId: number) {
+    async listUserOrders(userId: string) { // Mudado para string conforme schema
         return prismaClient.order.findMany({
-            where: { userId },
+            where: { 
+                // CORREÇÃO 2: No seu schema o campo é 'clientId', não 'userId'
+                clientId: userId 
+            },
             orderBy: { createdAt: "desc" },
             include: {
-                OrderItem: {
+                // CORREÇÃO 3: No seu schema a relação é 'items', não 'OrderItem'
+                items: {
                     include: {
                         product: true,
                     },
@@ -58,10 +68,16 @@ export class OrderController {
 
     async listMyOrders(req: AuthenticatedRequest, reply: FastifyReply) {
         try {
-            const userId = req.user?.id;
+            const userId = req.user?.userId;
+            
             if (!userId) {
-                return reply.code(401).send({ message: "Usuario nao autenticado. o Middleware falhou" });
+                return reply.code(401).send({ message: "Usuário não autenticado." });
             }
+
+            // Reutilizando a lógica corrigida acima
+            const orders = await this.listUserOrders(userId);
+            
+            reply.code(200).send(orders);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
@@ -93,7 +109,7 @@ export class OrderController {
         reply: FastifyReply
     ) {
         try {
-            const order = await orderService.getOrderById(
+            const order = await this.orderService.getOrderById(
                 parseInt(req.params.id, 10)
             );
             if (order) {
@@ -113,7 +129,7 @@ export class OrderController {
         try {
             const orderId = parseInt(req.params.id, 10);
             const { status } = req.body as { status: string };
-            const updatedOrder = await orderService.updateOrderStatus(
+            const updatedOrder = await this.orderService.updateOrderStatus(
                 orderId,
                 status
             );
@@ -130,7 +146,7 @@ export class OrderController {
         reply: FastifyReply
     ) {
         try {
-            const order = await orderService.updateOrder(
+            const order = await this.orderService.updateOrder(
                 parseInt(req.params.id, 10),
                 req.body as any
             );
@@ -145,7 +161,7 @@ export class OrderController {
         reply: FastifyReply
     ) {
         try {
-            await orderService.deleteOrder(parseInt(req.params.id, 10));
+            await this.orderService.deleteOrder(parseInt(req.params.id, 10));
             reply.code(204).send();
         } catch (error: any) {
             reply.code(500).send({ message: error.message });

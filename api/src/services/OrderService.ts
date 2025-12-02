@@ -1,70 +1,110 @@
 import prismaClient from "../prisma/index.js";
 import type { CreateOrderDTO } from "../dtos/order/CreateOrderDTO.js";
-import type { UpdateOrderDTO } from "../dtos/order/UpdateOrderDTO.js";
-import { OrderItemController } from "../controllers/OrderItemController.js";
+import { AbacatePayService } from "./AbacatePayService.js";
+// Importamos o Enum e tipos do Prisma para evitar conflito de tipagem
+import { OrderStatus, type Prisma } from "@prisma/client";
+
+// Definição local para update parcial, caso seu DTO não esteja exportando corretamente
+interface UpdateOrderData {
+    status?: OrderStatus;
+    // outros campos se houver
+}
+
+const abacateService = new AbacatePayService();
 
 export class OrderService {
-    async createOrder(userId: number, orderData: CreateOrderDTO) {
+    async createOrder(userId: string, orderData: CreateOrderDTO) {
         return prismaClient.$transaction(async (tx) => {
+            // 1. Buscar Carrinho e Validar Estoque
             const cart = await tx.cart.findUnique({
-                where: { userId },
+                where: { clientId: userId },
                 include: {
-                    CartItem: {
-                        include: {
-                            product: true,
-                        },
+                    items: { 
+                        include: { product: true },
                     },
                 },
             });
 
-            if (!cart || cart.CartItem.length === 0) {
-                throw new Error(
-                    "O carrinho está vazio. Não é possível criar o pedido."
-                );
+            if (!cart || cart.items.length === 0) {
+                throw new Error("Carrinho vazio ou não encontrado.");
             }
 
-            const order = await tx.order.create({
-                data: {
-                    userId: userId,
-                },
-            });
-
-            const orderItemsData: any[] = [];
-
-            for (const item of cart.CartItem) {
-                const product = item.product;
-
-                if (product.stock < item.quantity) {
-                    throw new Error(
-                        `Estoque insuficiente para o produto: ${product.name}. Apenas ${product.stock} em estoque.`
-                    );
+            // Validação de Estoque
+            for (const item of cart.items) {
+                if (item.product.stock < item.quantity) {
+                    throw new Error(`Estoque insuficiente: ${item.product.name}`);
                 }
-                orderItemsData.push({
-                    orderId: order.id,
-                    productId: product.id,
-                    quantity: item.quantity,
-                    price: product.price,
-                });
-
+                
+                // Baixa no Estoque (Corrigido: productId ao invés de id)
                 await tx.product.update({
-                    where: { id: product.id },
-                    data: {
-                        stock: {
-                            decrement: item.quantity,
-                        },
-                    },
+                    where: { productId: item.product.productId },
+                    data: { stock: { decrement: item.quantity } },
                 });
             }
+
+            // 2. Criar/Salvar Endereço
+            const newAddress = await tx.address.create({
+                data: {
+                    clientId: userId,
+                    zipCode: orderData.billingAddress.zipCode,
+                    street: orderData.billingAddress.street,
+                    number: orderData.billingAddress.number,
+                    neighborhood: orderData.billingAddress.neighborhood,
+                    complement: orderData.billingAddress.complement ?? null,
+                    type: "DELIVERY", 
+                },
+            });
+
+            // 3. Criar Pagamento
+            const newPayment = await tx.payment.create({
+                data: {
+                    method: orderData.paymentMethod,
+                    status: "PENDING",
+                    amountPaid: 0,
+                },
+            });
+
+            // 4. Criar o Pedido
+            const newOrder = await tx.order.create({
+                data: {
+                    clientId: userId,
+                    deliveryAddressId: newAddress.addressId,
+                    paymentId: newPayment.paymentId,
+                    totalAmount: orderData.amount / 100, 
+                    status: "PENDING",
+                },
+            });
+
+            // 5. Mover Itens
+            const orderItemsData = cart.items.map((item) => ({
+                orderId: newOrder.orderId,
+                productId: item.productId,
+                quantity: item.quantity,
+                paidUnitPrice: item.product.basePrice,
+            }));
 
             await tx.orderItem.createMany({
                 data: orderItemsData,
             });
 
-            await tx.cart.delete({
-                where: { userId },
+            // 6. Limpar Carrinho
+            await tx.cartItem.deleteMany({
+                where: { cartId: cart.cartId },
             });
 
-            return order;
+            // 7. Integração com AbacatePay
+            const abacateResponse = await abacateService.createBilling({
+                amount: orderData.amount,
+                customer: orderData.customer,
+                items: orderData.items,
+            });
+
+            return {
+                orderId: newOrder.orderId,
+                status: newOrder.status,
+                paymentUrl: abacateResponse.paymentUrl,
+                total: newOrder.totalAmount
+            };
         });
     }
 
@@ -75,9 +115,11 @@ export class OrderService {
             take: take,
             include: {
                 user: {
-                    select: { id: true, name: true, email: true },
+                    // CORREÇÃO: id -> userId
+                    select: { userId: true, name: true, email: true },
                 },
-                OrderItem: true,
+                // CORREÇÃO: OrderItem -> items (conforme schema)
+                items: true,
             },
         });
 
@@ -95,10 +137,14 @@ export class OrderService {
     async getOrderById(orderId: number) {
         return prismaClient.order.findUnique({
             where: { orderId },
+            include: {
+                items: true // Incluir itens ao buscar por ID é útil
+            }
         });
     }
 
-    async updateOrder(orderId: number, orderData: UpdateOrderDTO) {
+    // CORREÇÃO: Tipagem do orderData para aceitar o formato do Prisma
+    async updateOrder(orderId: number, orderData: Prisma.OrderUpdateInput) {
         return prismaClient.order.update({
             where: { orderId },
             data: orderData,
@@ -111,14 +157,15 @@ export class OrderService {
         });
     }
 
-    async restoreStock(orderId: number, tx: any) {
+    async restoreStock(orderId: number, tx: Prisma.TransactionClient) {
         const orderItems = await tx.orderItem.findMany({
             where: { orderId: orderId },
         });
 
         for (const item of orderItems) {
             await tx.product.update({
-                where: { id: item.productId },
+                // CORREÇÃO: id -> productId
+                where: { productId: item.productId },
                 data: {
                     stock: {
                         increment: item.quantity,
@@ -128,7 +175,7 @@ export class OrderService {
         }
     }
 
-    async updateOrderStatus(orderId: number, newStatus: string) {
+    async updateOrderStatus(orderId: number, newStatus: OrderStatus) {
         return prismaClient.$transaction(async (tx) => {
             const order = await tx.order.findUnique({
                 where: { orderId },
@@ -142,11 +189,13 @@ export class OrderService {
                 where: { orderId },
                 data: { status: newStatus },
                 include: {
-                    OrderItem: true,
+                    // CORREÇÃO: OrderItem -> items
+                    items: true,
                 },
             });
 
-            if (newStatus === "CANCELED" && order.status !== "CANCELED") {
+            // CORREÇÃO: CANCELED -> CANCELLED (Verifique seu schema, geralmente é CANCELLED)
+            if (newStatus === "CANCELLED" && order.status !== "CANCELLED") {
                 await this.restoreStock(orderId, tx);
                 console.log(`Estoque restaurado para o Pedido ${orderId}.`);
             }
