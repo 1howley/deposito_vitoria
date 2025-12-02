@@ -76,11 +76,16 @@ export function Layout() {
         // navigate('/checkout');
     };
 
+    const clearCart = () => {
+        setCartItems([]);
+    };
+
     const contextProps = {
         cartItems,
         addToCart,
         updateQuantity,
         removeFromCart,
+        clearCart,
         handleCheckout,
     };
 
