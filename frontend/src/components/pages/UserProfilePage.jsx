@@ -333,7 +333,7 @@ export function UserProfilePage({ onBack }) {
     const { user } = useAuth();
 
     // 1. LEITURA DO PARÂMETRO DA URL
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const urlSection = searchParams.get("section") || "profile";
 
     // 2. ESTADOS
@@ -349,11 +349,15 @@ export function UserProfilePage({ onBack }) {
 
     // 3. SINCRONIZAR ESTADO COM A URL
     React.useEffect(() => {
-        // Atualiza o activeSection se a URL mudar (ex: ao clicar no link "Pedidos" do menu flutuante)
-        if (activeSection !== urlSection) {
-            setActiveSection(urlSection);
-        }
-    }, [searchParams, urlSection, activeSection]);
+        const sectionFromUrl = searchParams.get("section") || "profile";
+        setActiveSection(sectionFromUrl);
+    }, [searchParams]);
+
+    const handleNavigation = (sectionId) => {
+        setActiveSection(sectionId); // Atualiza visualmente na hora
+        setSearchParams({ section: sectionId }); // Atualiza a URL para persistir
+        setIsMobileMenuOpen(false); // Fecha o menu mobile se estiver aberto
+    };
 
     // Lógica de Edição (Modal)
     const handleEditClick = (key, label, currentValue) => {
@@ -412,7 +416,7 @@ export function UserProfilePage({ onBack }) {
     // Conteúdo do Menu lateral
     const renderSidebarContent = (isMobile = false) => {
         // Para ter certeza que a seção 'orders' ou 'favorites' está ativa
-        const currentActiveSection = urlSection;
+        const currentActiveSection = activeSection;
 
         return (
             <div className="h-full">
@@ -462,14 +466,11 @@ export function UserProfilePage({ onBack }) {
                             return (
                                 <div key={item.id}>
                                     <button
-                                        onClick={() => {
-                                            setActiveSection(item.id);
-                                            if (isMobile) {
-                                                setIsMobileMenuOpen(false);
-                                            }
-                                        }}
+                                        onClick={() =>
+                                            handleNavigation(item.id)
+                                        }
                                         className={`w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
-                                            currentActiveSection === item.id
+                                            isActive
                                                 ? "bg-primary text-primary-foreground"
                                                 : "text-foreground hover:bg-muted"
                                         }`}
