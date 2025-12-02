@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import { ProductCard } from "../molecules/ProductCard";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
@@ -16,7 +16,10 @@ import { ProductService } from "../../services/products/ProductService";
 import { Skeleton } from "../atoms/skeleton";
 import { ImageWithFallback } from "../atoms/ImageWithFallback";
 
-export function CatalogPage({ onAddToCart }) {
+export function CatalogPage() {
+    const context = useOutletContext();
+    const addToCart =
+        context?.addToCart || ((p) => console.error("Erro no carrinho", p));
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -259,7 +262,7 @@ export function CatalogPage({ onAddToCart }) {
                                 <ProductCard
                                     key={product.productId}
                                     product={product}
-                                    onAddToCart={onAddToCart}
+                                    onAddToCart={addToCart}
                                 />
                             ) : (
                                 <div
@@ -304,7 +307,7 @@ export function CatalogPage({ onAddToCart }) {
                                             </div>
                                             <Button
                                                 onClick={() =>
-                                                    onAddToCart(product)
+                                                    addToCart(product)
                                                 }
                                                 disabled={product.stock <= 0}
                                                 className="shrink-0 w-full sm:w-auto text-xs md:text-sm"
