@@ -15,6 +15,7 @@ import { Search, Grid, List, ArrowLeft } from "lucide-react";
 import { ProductService } from "../../services/products/ProductService";
 import { Skeleton } from "../atoms/skeleton";
 import { ImageWithFallback } from "../atoms/ImageWithFallback";
+import loguinhoImg from '../../assets/loguinho.jpg'
 
 export function CatalogPage() {
     const context = useOutletContext();
@@ -285,7 +286,7 @@ export function CatalogPage() {
                                 >
                                     <ImageWithFallback
                                         src={product.image}
-                                        fallback="src/assets/loguinho.jpg"
+                                        fallback={loguinhoImg}
                                         alt={product.name}
                                         className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg shrink-0"
                                     />
