@@ -15,7 +15,7 @@ const server = Fastify({ logger: true });
 const startServer = async () => {
 
     await server.register(cors, {
-        origin: true, // Permite todas as origens (em dev)
+        origin: process.env.FRONTEND_URL || true,// Permite todas as origens (em dev)
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allowedHeaders: ["Content-Type", "Authorization"],
     });
