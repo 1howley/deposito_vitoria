@@ -10,14 +10,10 @@ export function PaymentSelector({ selectedMethod, onSelect }) {
             sub: "Pagamento instantâneo",
             discount: "5% de desconto",
         },
-        { id: "card", label: "Cartão de Crédito", sub: "Em até 12x sem juros" },
-        {
-            id: "boleto",
-            label: "Boleto Bancário",
-            sub: "Vencimento em 3 dias úteis",
-        },
+        // Removido objeto do "card"
+        // Removido objeto do "boleto"
     ];
-
+    
     return (
         <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">

@@ -46,10 +46,10 @@ export class AbacatePayService {
 
             const body = {
                 frequency: "ONE_TIME",
-                // CORREÇÃO BASEADA NA DOC:
-                // 1. Apenas "PIX" e "CARD" são permitidos.
-                // 2. Removemos "BOLETO" e corrigimos "CREDIT_CARD" para "CARD".
-                methods: ["PIX", "CARD"], 
+                
+                // ALTERAÇÃO AQUI: Remova "CARD" da lista
+                methods: ["PIX"], 
+                
                 products: payload.items.map(item => ({
                     externalId: item.id.toString(),
                     name: `Produto ${item.id}`,
