@@ -14,7 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "../atoms/table";
-import { Edit, Trash2, Plus, X } from "lucide-react";
+import { Edit, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export function AdminProductsPage() {
@@ -34,7 +34,6 @@ export function AdminProductsPage() {
     };
     const [formData, setFormData] = useState(initialForm);
 
-    // Carregar produtos
     const fetchProducts = async () => {
         try {
             setLoading(true);
@@ -51,7 +50,6 @@ export function AdminProductsPage() {
         if (user?.role === "ADMIN") fetchProducts();
     }, [user]);
 
-    // Manipular formulário
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -78,7 +76,7 @@ export function AdminProductsPage() {
             setFormData(initialForm);
             setIsEditing(false);
             setEditingId(null);
-            fetchProducts(); // Recarrega a lista
+            fetchProducts();
         } catch (error) {
             console.error(error);
             toast.error("Erro ao salvar produto.");
@@ -96,7 +94,6 @@ export function AdminProductsPage() {
         });
         setEditingId(product.productId);
         setIsEditing(true);
-        // Scroll para o topo onde está o formulário
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -123,10 +120,12 @@ export function AdminProductsPage() {
 
     return (
         <div className="container mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold mb-8">Gestão de Produtos</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">
+                Gestão de Produtos
+            </h1>
 
             <div className="grid lg:grid-cols-3 gap-8">
-                {/* Formulário (Lado Esquerdo ou Topo) */}
+                {/* Formulário */}
                 <Card className="lg:col-span-1 h-fit">
                     <CardHeader>
                         <CardTitle>
@@ -193,7 +192,7 @@ export function AdminProductsPage() {
                                         value={formData.category}
                                         onChange={handleChange}
                                         required
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
                                     >
                                         <option value="">Selecione...</option>
                                         <option value="Materiais Básicos">
@@ -227,7 +226,7 @@ export function AdminProductsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Lista de Produtos (Lado Direito ou Baixo) */}
+                {/* Lista de Produtos */}
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>
@@ -235,8 +234,9 @@ export function AdminProductsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="overflow-auto max-h-[600px]">
-                            <Table>
+                        {/* WRAPPER PARA SCROLL HORIZONTAL NO MOBILE */}
+                        <div className="overflow-x-auto w-full max-h-[600px]">
+                            <Table className="min-w-[600px]">
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Nome</TableHead>

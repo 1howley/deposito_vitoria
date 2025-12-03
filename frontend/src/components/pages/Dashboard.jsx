@@ -7,13 +7,8 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "../atoms/skeleton";
 
 export function Dashboard() {
-    // 1. TENTA PEGAR O CONTEXTO
     const context = useOutletContext();
 
-    // 2. DEBUG: Se isso imprimir 'null' ou 'undefined', seu Router está configurado errado
-    // console.log("Contexto no Dashboard:", context);
-
-    // 3. GARANTIA: Se o contexto falhar, cria uma função vazia para não quebrar a tela com erro 500
     const addToCart =
         context?.addToCart ||
         (() =>
@@ -59,9 +54,27 @@ export function Dashboard() {
             ?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // --- MUDANÇA AQUI: Roteamento para páginas específicas ---
     const handleCategoryClick = (categoryId) => {
-        // Lógica de navegação futura
-        console.log("Categoria clicada", categoryId);
+        const category = categories.find((c) => c.id === categoryId);
+        
+        if (!category) return;
+
+        // Normalizamos o nome para facilitar a comparação (minúsculas)
+        const name = category.name.toLowerCase();
+
+        // Verifica qual página específica deve abrir
+        if (name.includes("ferramentas")) {
+            navigate("/tools");
+        } else if (name.includes("tintas")) {
+            navigate("/paints");
+        } else if (name.includes("básicos") || name.includes("basicos")) {
+            navigate("/basics");
+        } else {
+            // Se for uma categoria nova que não tem página própria, 
+            // manda para o catálogo filtrado como fallback
+            navigate("/catalog", { state: { category: category.name } });
+        }
     };
 
     return (
@@ -86,13 +99,13 @@ export function Dashboard() {
                     </div>
 
                     {isLoading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
                             {Array.from({ length: 6 }).map((_, index) => (
                                 <Skeleton key={index} className="h-96 w-full" />
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
                             {featuredProducts.map((product) => (
                                 <ProductCard
                                     key={product.productId}

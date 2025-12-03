@@ -10,8 +10,8 @@ import {
     Heart,
     Crown,
     Menu,
-    Info,
     ChevronRight,
+    LogOut, // Importei o ícone de logout
 } from "lucide-react";
 import { Button } from "../atoms/button";
 import { Sheet, SheetContent } from "../atoms/sheet";
@@ -28,14 +28,14 @@ import { Input } from "../atoms/input";
 import { Label } from "../atoms/label";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "sonner";
-import { useSearchParams } from "react-router";
+import { useSearchParams, useNavigate } from "react-router"; // Importei useNavigate
 import { OrderService } from "../../services/orders/OrderService";
+import { signOut } from "firebase/auth"; // Import para logout
+import { auth } from "../../config/firebase"; // Import auth do firebase
 
 // ==========================================
-// 1. NOVO COMPONENTE: OrdersSection
+// 1. COMPONENTE: OrdersSection
 // ==========================================
-// Isolamos a lógica de pedidos aqui. Os Hooks ficam no topo deste componente
-// e ele só é montado quando o usuário clica na aba, respeitando as regras do React.
 function OrdersSection({ onBack }) {
     const { firebaseUser } = useAuth();
     const [myOrders, setMyOrders] = useState([]);
@@ -46,9 +46,7 @@ function OrdersSection({ onBack }) {
             if (!firebaseUser) return;
             try {
                 const token = await firebaseUser.getIdToken();
-
                 const data = await OrderService.getMyOrders(token);
-
                 setMyOrders(data);
             } catch (error) {
                 console.error("Erro ao buscar pedidos", error);
@@ -312,7 +310,6 @@ const RenderMainContent = ({
             );
 
         case "orders":
-            // CORREÇÃO: Usamos o componente OrdersSection ao invés de hooks inline
             return <OrdersSection onBack={() => setActiveSection("profile")} />;
 
         case "favorites":
@@ -378,6 +375,7 @@ const RenderMainContent = ({
 export function UserProfilePage({ onBack }) {
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     // Inicializa o estado com base na URL
     const urlSection = searchParams.get("section") || "profile";
@@ -392,7 +390,7 @@ export function UserProfilePage({ onBack }) {
     });
     const [tempValue, setTempValue] = useState("");
 
-    // Sincroniza mudança de URL com o estado do componente (ex: botão voltar do navegador)
+    // Sincroniza mudança de URL com o estado do componente
     useEffect(() => {
         const sectionFromUrl = searchParams.get("section") || "profile";
         setActiveSection(sectionFromUrl);
@@ -402,6 +400,17 @@ export function UserProfilePage({ onBack }) {
         setActiveSection(sectionId);
         setSearchParams({ section: sectionId });
         setIsMobileMenuOpen(false);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            toast.success("Você saiu com sucesso!");
+            navigate("/");
+        } catch (error) {
+            console.error("Erro ao fazer logout:", error);
+            toast.error("Erro ao tentar sair.");
+        }
     };
 
     const handleEditClick = (key, label, currentValue) => {
@@ -458,9 +467,9 @@ export function UserProfilePage({ onBack }) {
     const renderSidebarContent = (isMobile = false) => {
         const currentActiveSection = activeSection;
         return (
-            <div className="h-full">
+            <div className="h-full flex flex-col">
                 <div
-                    className={`flex flex-col items-start gap-4 mb-6 pb-6 border-b ${isMobile ? "p-4 pt-8" : "p-6 pt-8"}`}
+                    className={`flex flex-col items-start gap-4 mb-2 pb-6 border-b ${isMobile ? "p-4 pt-8" : "p-6 pt-8"}`}
                 >
                     <div className="flex items-center gap-3">
                         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center relative flex-shrink-0">
@@ -471,7 +480,7 @@ export function UserProfilePage({ onBack }) {
                             </div>
                         </div>
                         <div>
-                            <p className="font-semibold text-lg">
+                            <p className="font-semibold text-lg line-clamp-1">
                                 {user?.name || "CLIENTE"}
                             </p>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -483,7 +492,8 @@ export function UserProfilePage({ onBack }) {
                         </div>
                     </div>
                 </div>
-                <div className="px-6 pb-6">
+
+                <div className="px-6 py-4 flex-1">
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-4 px-3">
                         Minha Conta
                     </h3>
@@ -518,12 +528,25 @@ export function UserProfilePage({ onBack }) {
                         })}
                     </nav>
                 </div>
+
+                {/* BOTÃO DE LOGOUT ADICIONADO AQUI */}
+                <div className="p-6 border-t mt-auto">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <LogOut className="h-4 w-4" />
+                            <span className="text-sm font-medium">Sair</span>
+                        </div>
+                    </button>
+                </div>
             </div>
         );
     };
 
     return (
-        <div className="min-h-screen bg-muted/20">
+        <div className="flex-1 bg-muted/20 pb-10">
             {/* Mobile Header */}
             <div className="md:hidden bg-white border-b sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
@@ -558,9 +581,10 @@ export function UserProfilePage({ onBack }) {
 
             <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
                 <div className="flex flex-col md:flex-row gap-6 md:gap-6">
-                    <aside className="w-full md:w-72 md:flex-shrink-0 hidden md:block bg-white rounded-2xl shadow-sm border">
+                    <aside className="w-full md:w-72 md:flex-shrink-0 hidden md:block bg-white rounded-2xl shadow-sm border h-fit sticky top-24">
                         {renderSidebarContent(false)}
                     </aside>
+
                     <Sheet
                         open={isMobileMenuOpen}
                         onOpenChange={setIsMobileMenuOpen}
@@ -569,7 +593,8 @@ export function UserProfilePage({ onBack }) {
                             {renderSidebarContent(true)}
                         </SheetContent>
                     </Sheet>
-                    <main className="flex-1 min-w-0">
+
+                    <main className="flex-1 w-full min-w-0">
                         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border">
                             <RenderMainContent
                                 activeSection={activeSection}

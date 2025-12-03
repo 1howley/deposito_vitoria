@@ -22,13 +22,16 @@ export function CatalogPage() {
         context?.addToCart || ((p) => console.error("Erro no carrinho", p));
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState("all");
-    const [sortBy, setSortBy] = useState("name");
-    const [viewMode, setViewMode] = useState("grid");
     const navigate = useNavigate();
     const location = useLocation();
+
+    // --- MUDANÇA AQUI: Inicializa com a categoria vinda do Dashboard, se houver ---
+    const [selectedCategory, setSelectedCategory] = useState(location.state?.category || "all");
+    
     // Inicializa o termo de busca com o que veio do Header (se houver)
     const [searchTerm, setSearchTerm] = useState(location.state?.search || "");
+    const [sortBy, setSortBy] = useState("name");
+    const [viewMode, setViewMode] = useState("grid");
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -38,7 +41,6 @@ export function CatalogPage() {
                 setProducts(response.products);
             } catch (error) {
                 console.error("Failed to fetch products:", error);
-                // Handle error state if necessary
             } finally {
                 setIsLoading(false);
             }
@@ -47,12 +49,20 @@ export function CatalogPage() {
         fetchProducts();
     }, []);
 
+    // Se o usuário navegar de novo para a página com outro estado, atualiza o filtro
+    useEffect(() => {
+        if (location.state?.category) {
+            setSelectedCategory(location.state.category);
+        }
+        if (location.state?.search) {
+            setSearchTerm(location.state.search);
+        }
+    }, [location.state]);
+
     const categories = [
         ...new Set(products.map((p) => p.category).filter(Boolean)),
     ].map((category) => ({
         name: category,
-        // This count is not entirely correct if a product can have multiple categories.
-        // For now, we assume one category per product.
         count: products.filter((p) => p.category === category).length,
     }));
 
@@ -125,6 +135,7 @@ export function CatalogPage() {
                             />
                         </div>
 
+                        {/* Filtros Mobile */}
                         <div className="grid grid-cols-2 gap-2 md:hidden">
                             <Select
                                 value={selectedCategory}
@@ -163,6 +174,7 @@ export function CatalogPage() {
                             </Select>
                         </div>
 
+                        {/* Filtros Desktop */}
                         <div className="hidden md:flex md:gap-4">
                             <Select
                                 value={selectedCategory}
@@ -234,7 +246,7 @@ export function CatalogPage() {
                     <div
                         className={
                             viewMode === "grid"
-                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                                ? "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6"
                                 : "space-y-3 md:space-y-4"
                         }
                     >
@@ -255,7 +267,7 @@ export function CatalogPage() {
                     <div
                         className={
                             viewMode === "grid"
-                                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6"
+                                ? "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6"
                                 : "space-y-3 md:space-y-4"
                         }
                     >
