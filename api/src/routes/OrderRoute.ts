@@ -7,7 +7,11 @@ import { adminOnlyMiddleware } from "../common/middlewares/adminOnlyMiddleware.j
 const orderController = new OrderController();
 
 export const OrderRoute = async (fastify: FastifyInstance) => {
-    fastify.post("/", orderController.createOrder);
+    fastify.post(
+        "/",
+        { preHandler: [authMiddleware] },
+        orderController.createOrder
+    );
     fastify.get(
         "/",
         { preHandler: [authMiddleware] },

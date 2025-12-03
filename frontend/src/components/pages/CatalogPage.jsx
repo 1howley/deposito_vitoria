@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useOutletContext } from "react-router";
+import { useNavigate, useOutletContext, useLocation } from "react-router";
 import { ProductCard } from "../molecules/ProductCard";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
@@ -22,11 +22,13 @@ export function CatalogPage() {
         context?.addToCart || ((p) => console.error("Erro no carrinho", p));
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
     const [viewMode, setViewMode] = useState("grid");
     const navigate = useNavigate();
+    const location = useLocation();
+    // Inicializa o termo de busca com o que veio do Header (se houver)
+    const [searchTerm, setSearchTerm] = useState(location.state?.search || "");
 
     useEffect(() => {
         const fetchProducts = async () => {

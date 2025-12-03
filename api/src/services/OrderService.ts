@@ -1,48 +1,43 @@
 import prismaClient from "../prisma/index.js";
 import type { CreateOrderDTO } from "../dtos/order/CreateOrderDTO.js";
 import { AbacatePayService } from "./AbacatePayService.js";
-// Importamos o Enum e tipos do Prisma para evitar conflito de tipagem
 import { OrderStatus, type Prisma } from "@prisma/client";
-
-// Definição local para update parcial, caso seu DTO não esteja exportando corretamente
-interface UpdateOrderData {
-    status?: OrderStatus;
-    // outros campos se houver
-}
 
 const abacateService = new AbacatePayService();
 
 export class OrderService {
     async createOrder(userId: string, orderData: CreateOrderDTO) {
+        // Usamos transação para garantir que se o pagamento falhar, o estoque volta
         return prismaClient.$transaction(async (tx) => {
-            // 1. Buscar Carrinho e Validar Estoque
-            const cart = await tx.cart.findUnique({
-                where: { clientId: userId },
-                include: {
-                    items: { 
-                        include: { product: true },
-                    },
-                },
-            });
+            let totalCalculated = 0;
+            const orderItemsData = [];
 
-            if (!cart || cart.items.length === 0) {
-                throw new Error("Carrinho vazio ou não encontrado.");
-            }
-
-            // Validação de Estoque
-            for (const item of cart.items) {
-                if (item.product.stock < item.quantity) {
-                    throw new Error(`Estoque insuficiente: ${item.product.name}`);
-                }
+            // 1. Validação de Estoque e Cálculo de Preço
+            for (const item of orderData.items) {
+                const product = await tx.product.findUnique({ where: { productId: item.id } });
                 
-                // Baixa no Estoque (Corrigido: productId ao invés de id)
+                if (!product) throw new Error(`Produto ID ${item.id} não encontrado.`);
+                if (product.stock < item.quantity) {
+                    throw new Error(`Estoque insuficiente para: ${product.name}. Disponível: ${product.stock}`);
+                }
+
+                // DEDUZ ESTOQUE (Reserva)
                 await tx.product.update({
-                    where: { productId: item.product.productId },
-                    data: { stock: { decrement: item.quantity } },
+                    where: { productId: item.id },
+                    data: { stock: { decrement: item.quantity } }
+                });
+
+                const unitPrice = Number(product.basePrice);
+                totalCalculated += unitPrice * item.quantity;
+                
+                orderItemsData.push({
+                    productId: product.productId,
+                    quantity: item.quantity,
+                    paidUnitPrice: unitPrice
                 });
             }
 
-            // 2. Criar/Salvar Endereço
+            // 2. Criar Endereço de Entrega
             const newAddress = await tx.address.create({
                 data: {
                     clientId: userId,
@@ -50,17 +45,19 @@ export class OrderService {
                     street: orderData.billingAddress.street,
                     number: orderData.billingAddress.number,
                     neighborhood: orderData.billingAddress.neighborhood,
-                    complement: orderData.billingAddress.complement ?? null,
+                    city: orderData.billingAddress.city,
+                    state: orderData.billingAddress.state,
+                    complement: orderData.billingAddress.complement,
                     type: "DELIVERY", 
                 },
             });
 
-            // 3. Criar Pagamento
+            // 3. Criar Registro de Pagamento
             const newPayment = await tx.payment.create({
                 data: {
                     method: orderData.paymentMethod,
                     status: "PENDING",
-                    amountPaid: 0,
+                    amountPaid: 0, 
                 },
             });
 
@@ -70,33 +67,33 @@ export class OrderService {
                     clientId: userId,
                     deliveryAddressId: newAddress.addressId,
                     paymentId: newPayment.paymentId,
-                    totalAmount: orderData.amount / 100, 
+                    totalAmount: totalCalculated, 
                     status: "PENDING",
                 },
             });
 
-            // 5. Mover Itens
-            const orderItemsData = cart.items.map((item) => ({
-                orderId: newOrder.orderId,
-                productId: item.productId,
-                quantity: item.quantity,
-                paidUnitPrice: item.product.basePrice,
-            }));
-
+            // 5. Salvar Itens
             await tx.orderItem.createMany({
-                data: orderItemsData,
+                data: orderItemsData.map(i => ({ ...i, orderId: newOrder.orderId }))
             });
 
-            // 6. Limpar Carrinho
-            await tx.cartItem.deleteMany({
-                where: { cartId: cart.cartId },
-            });
+            // 6. Limpar o Carrinho do usuário
+            const cart = await tx.cart.findUnique({ where: { clientId: userId } });
+            if (cart) {
+                await tx.cartItem.deleteMany({ where: { cartId: cart.cartId } });
+            }
 
-            // 7. Integração com AbacatePay
+            // 7. Integração AbacatePay
+            // Passamos os itens para o AbacatePay também para aparecer no checkout deles
             const abacateResponse = await abacateService.createBilling({
-                amount: orderData.amount,
+                amount: Math.round(totalCalculated * 100),
                 customer: orderData.customer,
-                items: orderData.items,
+                items: orderItemsData.map((item) => ({
+                    id: item.productId,
+                    quantity: item.quantity,
+                    unitPrice: item.paidUnitPrice
+                })),
+                orderId: newOrder.orderId // <--- ADICIONADO O ID AQUI
             });
 
             return {
@@ -111,15 +108,12 @@ export class OrderService {
     async getAllOrders(skip: number, take: number) {
         const totalItems = await prismaClient.order.count();
         const orders = await prismaClient.order.findMany({
-            skip: skip,
-            take: take,
+            skip,
+            take,
+            orderBy: { createdAt: "desc" }, // Ordenar por mais recente
             include: {
-                user: {
-                    // CORREÇÃO: id -> userId
-                    select: { userId: true, name: true, email: true },
-                },
-                // CORREÇÃO: OrderItem -> items (conforme schema)
-                items: true,
+                user: { select: { userId: true, name: true, email: true } },
+                items: { include: { product: true } }, // Inclui detalhes do produto
             },
         });
 
@@ -128,7 +122,7 @@ export class OrderService {
             meta: {
                 totalItems,
                 limit: take,
-                currentPage: skip / take + 1,
+                currentPage: Math.floor(skip / take) + 1,
                 totalPages: Math.ceil(totalItems / take),
             },
         };
@@ -137,70 +131,39 @@ export class OrderService {
     async getOrderById(orderId: number) {
         return prismaClient.order.findUnique({
             where: { orderId },
-            include: {
-                items: true // Incluir itens ao buscar por ID é útil
-            }
+            include: { items: { include: { product: true } } }
         });
-    }
-
-    // CORREÇÃO: Tipagem do orderData para aceitar o formato do Prisma
-    async updateOrder(orderId: number, orderData: Prisma.OrderUpdateInput) {
-        return prismaClient.order.update({
-            where: { orderId },
-            data: orderData,
-        });
-    }
-
-    async deleteOrder(orderId: number) {
-        return prismaClient.order.delete({
-            where: { orderId },
-        });
-    }
-
-    async restoreStock(orderId: number, tx: Prisma.TransactionClient) {
-        const orderItems = await tx.orderItem.findMany({
-            where: { orderId: orderId },
-        });
-
-        for (const item of orderItems) {
-            await tx.product.update({
-                // CORREÇÃO: id -> productId
-                where: { productId: item.productId },
-                data: {
-                    stock: {
-                        increment: item.quantity,
-                    },
-                },
-            });
-        }
     }
 
     async updateOrderStatus(orderId: number, newStatus: OrderStatus) {
         return prismaClient.$transaction(async (tx) => {
-            const order = await tx.order.findUnique({
-                where: { orderId },
-            });
+            const order = await tx.order.findUnique({ where: { orderId } });
+            if (!order) throw new Error("Pedido não encontrado");
 
-            if (!order) {
-                throw new Error(`Pedido com ID ${orderId} não encontrado`);
-            }
-
-            const updatedOrder = await tx.order.update({
-                where: { orderId },
-                data: { status: newStatus },
-                include: {
-                    // CORREÇÃO: OrderItem -> items
-                    items: true,
-                },
-            });
-
-            // CORREÇÃO: CANCELED -> CANCELLED (Verifique seu schema, geralmente é CANCELLED)
+            // Se cancelar, devolve o estoque
             if (newStatus === "CANCELLED" && order.status !== "CANCELLED") {
-                await this.restoreStock(orderId, tx);
-                console.log(`Estoque restaurado para o Pedido ${orderId}.`);
+                const items = await tx.orderItem.findMany({ where: { orderId } });
+                for (const item of items) {
+                    await tx.product.update({
+                        where: { productId: item.productId },
+                        data: { stock: { increment: item.quantity } }
+                    });
+                }
             }
 
-            return updatedOrder;
+            return tx.order.update({
+                where: { orderId },
+                data: { status: newStatus }
+            });
         });
+    }
+    
+    // Método genérico para update
+    async updateOrder(orderId: number, data: Prisma.OrderUpdateInput) {
+        return prismaClient.order.update({ where: { orderId }, data });
+    }
+    
+    async deleteOrder(orderId: number) {
+        return prismaClient.order.delete({ where: { orderId }});
     }
 }

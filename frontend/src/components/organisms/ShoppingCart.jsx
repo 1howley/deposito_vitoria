@@ -121,6 +121,10 @@ export function ShoppingCart({
                                                             item.quantity + 1
                                                         )
                                                     }
+                                                    disabled={
+                                                        item.quantity >=
+                                                        item.stock
+                                                    }
                                                     className="h-8 w-8 p-0"
                                                 >
                                                     <Plus className="h-3 w-3 md:h-4 md:w-4" />

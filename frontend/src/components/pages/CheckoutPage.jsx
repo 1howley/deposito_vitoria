@@ -8,7 +8,7 @@ import { useAuth } from "../../hooks/useAuth"; // Importante para o Token
 import { AddressForm } from "../molecules/AddressForm";
 import { PaymentSelector } from "../molecules/PaymentSelector";
 import { OrderSummary } from "../molecules/OrderSummary";
-import { api } from "../../services";
+import { OrderService } from "../../services/orders/OrderService";
 
 export function CheckoutPage() {
     const navigate = useNavigate();
@@ -25,16 +25,27 @@ export function CheckoutPage() {
     });
 
     const [deliveryInfo, setDeliveryInfo] = useState({
-        name: "", email: "", phone: "", document: "",
-        zipCode: "", address: "", number: "", complement: "",
-        neighborhood: "", city: "", state: "",
+        name: "",
+        email: "",
+        phone: "",
+        document: "",
+        zipCode: "",
+        address: "",
+        number: "",
+        complement: "",
+        neighborhood: "",
+        city: "",
+        state: "",
     });
 
     const [paymentMethod, setPaymentMethod] = useState("pix");
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Cálculos
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = cartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+    );
     const shipping = subtotal > 200 ? 0 : 25.0;
     const total = subtotal + shipping;
 
@@ -43,13 +54,20 @@ export function CheckoutPage() {
     };
 
     const formatPrice = (price) => {
-        return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        }).format(price);
     };
 
     const handleFinishOrder = async () => {
-        // Validações
-        if (!deliveryInfo.name || !deliveryInfo.document || !deliveryInfo.address) {
-            toast.error("Preencha os campos obrigatórios (Nome, CPF, Endereço).");
+        if (
+            !deliveryInfo.name ||
+            !deliveryInfo.document ||
+            !deliveryInfo.address ||
+            !deliveryInfo.zipCode
+        ) {
+            toast.error("Preencha todos os dados de entrega e CPF.");
             return;
         }
 
@@ -62,58 +80,59 @@ export function CheckoutPage() {
         setIsProcessing(true);
 
         try {
-            // Pega o token atualizado do Firebase
             const token = await firebaseUser.getIdToken();
 
-            // 2. Monta o objeto de dados (Payload)
+            // Payload estritamente tipado conforme esperado pelo backend
             const orderPayload = {
                 customer: {
                     name: deliveryInfo.name,
                     email: deliveryInfo.email,
                     phone: deliveryInfo.phone,
-                    taxId: deliveryInfo.document,
+                    taxId: deliveryInfo.document, // CPF
                 },
                 billingAddress: {
+                    zipCode: deliveryInfo.zipCode,
                     street: deliveryInfo.address,
                     number: deliveryInfo.number,
-                    complement: deliveryInfo.complement,
                     neighborhood: deliveryInfo.neighborhood,
                     city: deliveryInfo.city,
                     state: deliveryInfo.state,
-                    zipCode: deliveryInfo.zipCode,
+                    complement: deliveryInfo.complement,
                 },
                 items: cartItems.map((item) => ({
-                    id: item.productId || item.id,
+                    id: item.productId || item.id, // Garante ID numérico
                     quantity: item.quantity,
-                    unitPrice: item.price
+                    // O backend vai recalcular o preço por segurança, mas enviamos aqui
+                    unitPrice: item.price,
                 })),
-                amount: Math.round((paymentMethod === "pix" ? total - subtotal * 0.05 : total) * 100),
-                paymentMethod: paymentMethod.toUpperCase() === "CARD" ? "CREDIT_CARD" : paymentMethod.toUpperCase(),
-            }; // <--- O OBJETO TERMINA AQUI. PONTO E VÍRGULA IMPORTANTE!
+                amount: Math.round(total * 100), // Total em centavos
+                paymentMethod:
+                    paymentMethod.toUpperCase() === "CARD"
+                        ? "CREDIT_CARD"
+                        : "PIX",
+            };
 
-            // 3. Envia para o Backend (AGORA FORA DO OBJETO)
-            const response = await api.post("/orders", orderPayload, {
-                headers: {
-                    Authorization: `Bearer ${token}` // Envia o token para o backend saber quem é
-                }
-            });
+            console.log(token);
+            const data = await OrderService.create(orderPayload, token);
 
-            const { paymentUrl } = response.data;
+            const { paymentUrl } = data;
 
-            toast.success("Pedido realizado! Redirecionando...");
+            toast.success("Pedido gerado! Redirecionando para pagamento...");
             clearCart();
 
-            // 4. Redireciona para o pagamento
+            // Redirecionamento vital
             if (paymentUrl) {
-                window.location.href = paymentUrl;
+                setTimeout(() => {
+                    window.location.href = paymentUrl;
+                }, 1500);
             } else {
-                navigate('/');
+                navigate("/profile?section=orders");
             }
-
         } catch (error) {
-            console.error("Erro ao processar:", error);
-            const msg = error.response?.data?.message || "Erro ao processar pedido.";
-            toast.error(msg);
+            console.error("Erro checkout:", error);
+            toast.error(
+                error.response?.data?.message || "Erro ao processar pedido."
+            );
         } finally {
             setIsProcessing(false);
         }
@@ -122,8 +141,12 @@ export function CheckoutPage() {
     if (cartItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-                <h2 className="text-2xl font-bold text-muted-foreground mb-4">Seu carrinho está vazio</h2>
-                <Button onClick={() => navigate('/')}>Voltar para a Loja</Button>
+                <h2 className="text-2xl font-bold text-muted-foreground mb-4">
+                    Seu carrinho está vazio
+                </h2>
+                <Button onClick={() => navigate("/")}>
+                    Voltar para a Loja
+                </Button>
             </div>
         );
     }
@@ -140,14 +163,24 @@ export function CheckoutPage() {
 
             <div className="container mx-auto px-4">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold mb-2">Finalizar Compra</h1>
-                    <p className="text-muted-foreground">Confira seus itens e dados de entrega</p>
+                    <h1 className="text-3xl font-bold mb-2">
+                        Finalizar Compra
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Confira seus itens e dados de entrega
+                    </p>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-6">
-                        <AddressForm deliveryInfo={deliveryInfo} onChange={handleInputChange} />
-                        <PaymentSelector selectedMethod={paymentMethod} onSelect={setPaymentMethod} />
+                        <AddressForm
+                            deliveryInfo={deliveryInfo}
+                            onChange={handleInputChange}
+                        />
+                        <PaymentSelector
+                            selectedMethod={paymentMethod}
+                            onSelect={setPaymentMethod}
+                        />
                     </div>
 
                     <div className="lg:col-span-1">

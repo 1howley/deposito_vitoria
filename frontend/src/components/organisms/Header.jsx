@@ -8,17 +8,28 @@ import logo from "../../assets/logo.jpg";
 import UserMenu from "../molecules/UserMenu";
 import { FaUser } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router";
 
 export function Header({ cartCount, onCartClick }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const iconRef = useRef(null);
+    const navigate = useNavigate();
+    const [searchValue, setSearchValue] = useState("");
 
     const { user } = useAuth();
     console.log(user);
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
+    };
+
+    const handleSearch = (e) => {
+        if (e.key === "Enter") {
+            // Redireciona para o catálogo com o termo de busca na URL
+            // (Você precisará ajustar o CatalogPage para ler da URL também, ou passar via state)
+            navigate("/catalog", { state: { search: searchValue } });
+        }
     };
 
     useEffect(() => {
@@ -69,6 +80,9 @@ export function Header({ cartCount, onCartClick }) {
                             <Input
                                 placeholder="O que você procura no Depósito Vitória?"
                                 className="pl-12 h-12 bg-gray-100 border-0 rounded-full"
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                onKeyDown={handleSearch}
                             />
                         </div>
                     </div>
@@ -182,12 +196,20 @@ export function Header({ cartCount, onCartClick }) {
                                 Tintas
                             </Link>
                             {user?.role == "ADMIN" && (
-                                <Link
-                                    className="text-foreground hover:text-primary transition-colors font-medium"
-                                    to="add-product"
-                                >
-                                    Adicionar Produto
-                                </Link>
+                                <>
+                                    <Link
+                                        className="text-foreground hover:text-primary transition-colors font-medium"
+                                        to="add-product"
+                                    >
+                                        Adicionar Produto
+                                    </Link>
+                                    <Link
+                                        className="text-foreground hover:text-primary transition-colors font-medium"
+                                        to="admin/orders"
+                                    >
+                                        Rastreio
+                                    </Link>
+                                </>
                             )}
                         </ul>
                     </div>

@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   userId    String   @id
-  email     String   
+  email     String   @unique
   name      String?
   role      Role     @default(CUSTOMER)
   authProvider String
@@ -60,6 +60,8 @@ model Address {
   zipCode     String       @db.VarChar(9)
   street      String       @db.VarChar(255)
   number      String       @db.VarChar(10)
+  city        String       @db.VarChar(100)
+  state       String       @db.VarChar(100)
   neighborhood String      @db.VarChar(255)
   complement  String?      @db.VarChar(100)
   type        AddressType

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     User,
     Phone,
@@ -9,9 +9,9 @@ import {
     ShoppingBag,
     Heart,
     Crown,
-    ChevronRight,
     Menu,
     Info,
+    ChevronRight,
 } from "lucide-react";
 import { Button } from "../atoms/button";
 import { Sheet, SheetContent } from "../atoms/sheet";
@@ -28,9 +28,161 @@ import { Input } from "../atoms/input";
 import { Label } from "../atoms/label";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "sonner";
-import { useSearchParams } from "react-router"; // <-- Importação crucial
+import { useSearchParams } from "react-router";
+import { OrderService } from "../../services/orders/OrderService";
 
-// Função auxiliar para o conteúdo principal
+// ==========================================
+// 1. NOVO COMPONENTE: OrdersSection
+// ==========================================
+// Isolamos a lógica de pedidos aqui. Os Hooks ficam no topo deste componente
+// e ele só é montado quando o usuário clica na aba, respeitando as regras do React.
+function OrdersSection({ onBack }) {
+    const { firebaseUser } = useAuth();
+    const [myOrders, setMyOrders] = useState([]);
+    const [loadingOrders, setLoadingOrders] = useState(true);
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            if (!firebaseUser) return;
+            try {
+                const token = await firebaseUser.getIdToken();
+
+                const data = await OrderService.getMyOrders(token);
+
+                setMyOrders(data);
+            } catch (error) {
+                console.error("Erro ao buscar pedidos", error);
+                toast.error("Não foi possível carregar seus pedidos.");
+            } finally {
+                setLoadingOrders(false);
+            }
+        };
+        fetchOrders();
+    }, [firebaseUser]);
+
+    const getStatusColor = (status) => {
+        const map = {
+            PENDING: "bg-yellow-100 text-yellow-800",
+            PAID: "bg-blue-100 text-blue-800",
+            PROCESSING: "bg-blue-100 text-blue-800",
+            SHIPPED: "bg-purple-100 text-purple-800",
+            DELIVERED: "bg-green-100 text-green-800",
+            CANCELLED: "bg-red-100 text-red-800",
+        };
+        return map[status] || "bg-gray-100";
+    };
+
+    const translateStatus = (status) => {
+        const map = {
+            PENDING: "Aguardando Pagamento",
+            PAID: "Pago",
+            PROCESSING: "Em Separação",
+            SHIPPED: "Em Trânsito",
+            DELIVERED: "Entregue",
+            CANCELLED: "Cancelado",
+        };
+        return map[status] || status;
+    };
+
+    return (
+        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+            <button
+                onClick={onBack}
+                className="flex items-center text-primary hover:underline mb-6 font-medium text-sm"
+            >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                voltar
+            </button>
+            <h2 className="text-2xl font-bold mb-6">Meus Pedidos</h2>
+
+            {loadingOrders ? (
+                <div className="flex justify-center py-10">
+                    <p className="text-muted-foreground animate-pulse">
+                        Carregando pedidos...
+                    </p>
+                </div>
+            ) : myOrders.length === 0 ? (
+                <div className="text-center py-10 border rounded-lg bg-gray-50">
+                    <p className="text-muted-foreground">
+                        Você ainda não fez nenhum pedido.
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {myOrders.map((order) => (
+                        <div
+                            key={order.orderId}
+                            className="border rounded-lg p-4 hover:border-primary transition-colors bg-white shadow-sm"
+                        >
+                            <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
+                                <div>
+                                    <p className="font-bold text-lg">
+                                        Pedido #{order.orderId}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {new Date(
+                                            order.orderedAt
+                                        ).toLocaleDateString()}{" "}
+                                        às{" "}
+                                        {new Date(
+                                            order.orderedAt
+                                        ).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        })}
+                                    </p>
+                                </div>
+                                <span
+                                    className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)}`}
+                                >
+                                    {translateStatus(order.status)}
+                                </span>
+                            </div>
+
+                            <div className="space-y-2 mb-4 bg-muted/20 p-3 rounded-md">
+                                {order.items?.map((item) => (
+                                    <div
+                                        key={item.productId}
+                                        className="flex justify-between text-sm"
+                                    >
+                                        <span className="text-foreground/80">
+                                            {item.quantity}x{" "}
+                                            {item.product?.name || "Produto"}
+                                        </span>
+                                        <span className="font-medium text-foreground">
+                                            {new Intl.NumberFormat("pt-BR", {
+                                                style: "currency",
+                                                currency: "BRL",
+                                            }).format(
+                                                Number(item.paidUnitPrice)
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="border-t pt-3 flex justify-between items-center">
+                                <span className="font-semibold text-muted-foreground">
+                                    Total
+                                </span>
+                                <span className="font-bold text-lg text-primary">
+                                    {new Intl.NumberFormat("pt-BR", {
+                                        style: "currency",
+                                        currency: "BRL",
+                                    }).format(Number(order.totalAmount))}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ==========================================
+// 2. RenderMainContent (Logica de navegação)
+// ==========================================
 const RenderMainContent = ({
     activeSection,
     setActiveSection,
@@ -54,9 +206,7 @@ const RenderMainContent = ({
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <BackButton />
                     <h2 className="text-2xl font-bold mb-8">Dados Pessoais</h2>
-
                     <div className="space-y-1">
-                        {/* Nome */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
                             <div className="w-full md:w-1/4 mb-2 md:mb-0">
                                 <span className="font-bold text-foreground">
@@ -75,8 +225,6 @@ const RenderMainContent = ({
                                 editar
                             </button>
                         </div>
-
-                        {/* CPF */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
                             <div className="w-full md:w-1/4 mb-2 md:mb-0">
                                 <span className="font-bold text-foreground">
@@ -95,22 +243,6 @@ const RenderMainContent = ({
                                 mostrar
                             </button>
                         </div>
-
-                        {/* Data de Nascimento */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
-                            <div className="w-full md:w-1/4 mb-2 md:mb-0 flex items-center gap-2">
-                                <span className="font-bold text-foreground">
-                                    Data de nascimento
-                                </span>
-                                <Info className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1 text-muted-foreground">
-                                --/--/----
-                            </div>
-                            <button className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer">
-                                editar
-                            </button>
-                        </div>
                     </div>
                 </div>
             );
@@ -120,9 +252,7 @@ const RenderMainContent = ({
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <BackButton />
                     <h2 className="text-2xl font-bold mb-8">Contatos</h2>
-
                     <div className="space-y-1">
-                        {/* E-mail */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
                             <div className="w-full md:w-1/4 mb-2 md:mb-0">
                                 <span className="font-bold text-foreground">
@@ -141,66 +271,6 @@ const RenderMainContent = ({
                                 editar
                             </button>
                         </div>
-
-                        {/* Celular */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
-                            <div className="w-full md:w-1/4 mb-2 md:mb-0 flex items-center gap-2">
-                                <span className="font-bold text-foreground">
-                                    Celular{" "}
-                                    <span className="font-normal text-muted-foreground">
-                                        - principal
-                                    </span>
-                                </span>
-                                <Info className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1 text-muted-foreground">
-                                (31) 99702-8696
-                            </div>
-                            <button
-                                onClick={() =>
-                                    onEdit(
-                                        "phone",
-                                        "Celular",
-                                        "(31) 99702-8696"
-                                    )
-                                }
-                                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
-                            >
-                                editar
-                            </button>
-                        </div>
-
-                        {/* Preferências */}
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-6 border-b">
-                            <div className="w-full md:w-1/4 mb-2 md:mb-0 flex items-center gap-2">
-                                <span className="font-bold text-foreground">
-                                    Preferências de contato
-                                </span>
-                                <Info className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1 text-muted-foreground">
-                                Receber ofertas por WhatsApp
-                            </div>
-                            <button
-                                onClick={() =>
-                                    toast.info(
-                                        "Configuração de preferências em breve"
-                                    )
-                                }
-                                className="text-primary font-bold text-sm hover:underline mt-2 md:mt-0 cursor-pointer"
-                            >
-                                editar
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 flex justify-end">
-                        <Button
-                            variant="outline"
-                            className="border-primary text-primary hover:bg-primary/5"
-                        >
-                            Adicionar novo telefone
-                        </Button>
                     </div>
                 </div>
             );
@@ -211,10 +281,8 @@ const RenderMainContent = ({
                     <BackButton />
                     <h2 className="text-2xl font-bold mb-4">Dados de acesso</h2>
                     <p className="text-muted-foreground mb-8">
-                        Mantenha sua senha sempre atualizada. Clique abaixo para
-                        alterar sua senha
+                        Mantenha sua senha sempre atualizada.
                     </p>
-
                     <Button className="w-full md:w-auto px-8 py-6 text-lg rounded-md font-bold shadow-sm">
                         Alterar Senha
                     </Button>
@@ -226,20 +294,16 @@ const RenderMainContent = ({
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <BackButton />
                     <h2 className="text-2xl font-bold mb-8">Endereços</h2>
-
                     <div className="flex flex-col items-center justify-center py-12">
-                        {/* Ilustração Placeholder */}
                         <div className="mb-6 bg-muted/30 rounded-full p-8">
                             <Home
                                 className="w-24 h-24 text-muted-foreground/50"
                                 strokeWidth={1}
                             />
                         </div>
-
                         <p className="text-primary font-bold mb-8 text-lg">
                             Sem endereço cadastrado
                         </p>
-
                         <Button className="px-6 py-6 font-bold rounded-md">
                             Adicionar novo endereço
                         </Button>
@@ -248,13 +312,8 @@ const RenderMainContent = ({
             );
 
         case "orders":
-            return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <BackButton />
-                    <h2 className="text-2xl font-bold mb-8">Meus Pedidos</h2>
-                    <p>Aqui você verá a lista dos seus pedidos.</p>
-                </div>
-            );
+            // CORREÇÃO: Usamos o componente OrdersSection ao invés de hooks inline
+            return <OrdersSection onBack={() => setActiveSection("profile")} />;
 
         case "favorites":
             return (
@@ -271,7 +330,7 @@ const RenderMainContent = ({
                     <BackButton />
                     <h2 className="text-2xl font-bold mb-8">Preferências</h2>
                     <p className="text-muted-foreground">
-                        Gerencie suas preferências de notificação e privacidade.
+                        Gerencie suas preferências de notificação.
                     </p>
                 </div>
             );
@@ -308,36 +367,22 @@ const RenderMainContent = ({
                             );
                         })}
                     </div>
-
-                    <div className="mt-8 p-4 md:p-6 bg-muted/30 rounded-xl border">
-                        <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <User className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold mb-1">
-                                    Informações do Cliente
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Mantenha seus dados sempre atualizados.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </>
             );
     }
 };
 
+// ==========================================
+// 3. UserProfilePage (Principal)
+// ==========================================
 export function UserProfilePage({ onBack }) {
     const { user } = useAuth();
-
-    // 1. LEITURA DO PARÂMETRO DA URL
     const [searchParams, setSearchParams] = useSearchParams();
-    const urlSection = searchParams.get("section") || "profile";
 
-    // 2. ESTADOS
+    // Inicializa o estado com base na URL
+    const urlSection = searchParams.get("section") || "profile";
     const [activeSection, setActiveSection] = useState(urlSection);
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingField, setEditingField] = useState({
@@ -347,19 +392,18 @@ export function UserProfilePage({ onBack }) {
     });
     const [tempValue, setTempValue] = useState("");
 
-    // 3. SINCRONIZAR ESTADO COM A URL
-    React.useEffect(() => {
+    // Sincroniza mudança de URL com o estado do componente (ex: botão voltar do navegador)
+    useEffect(() => {
         const sectionFromUrl = searchParams.get("section") || "profile";
         setActiveSection(sectionFromUrl);
     }, [searchParams]);
 
     const handleNavigation = (sectionId) => {
-        setActiveSection(sectionId); // Atualiza visualmente na hora
-        setSearchParams({ section: sectionId }); // Atualiza a URL para persistir
-        setIsMobileMenuOpen(false); // Fecha o menu mobile se estiver aberto
+        setActiveSection(sectionId);
+        setSearchParams({ section: sectionId });
+        setIsMobileMenuOpen(false);
     };
 
-    // Lógica de Edição (Modal)
     const handleEditClick = (key, label, currentValue) => {
         setEditingField({ key, label, value: currentValue || "" });
         setTempValue(currentValue || "");
@@ -367,13 +411,11 @@ export function UserProfilePage({ onBack }) {
     };
 
     const handleSave = async () => {
-        // Simulação de salvamento
         console.log(`Salvando ${editingField.key}: ${tempValue}`);
         toast.success(`${editingField.label} atualizado com sucesso!`);
         setIsEditModalOpen(false);
     };
 
-    // Definição dos dados
     const menuItems = [
         { id: "profile", label: "Meu Perfil", icon: User },
         { id: "orders", label: "Meus Pedidos", icon: ShoppingBag },
@@ -384,13 +426,13 @@ export function UserProfilePage({ onBack }) {
         {
             id: "personal-data",
             title: "Dados Pessoais",
-            description: "Gerencie seus dados pessoais: nome e CPF.",
+            description: "Gerencie seus dados pessoais.",
             icon: User,
         },
         {
             id: "contacts",
             title: "Contatos",
-            description: "Gerencie e-mails e telefones cadastrados.",
+            description: "Gerencie e-mails e telefones.",
             icon: Phone,
         },
         {
@@ -402,7 +444,7 @@ export function UserProfilePage({ onBack }) {
         {
             id: "addresses",
             title: "Endereços",
-            description: "Altere ou adicione endereços de entregas.",
+            description: "Altere endereços de entregas.",
             icon: Home,
         },
         {
@@ -413,14 +455,10 @@ export function UserProfilePage({ onBack }) {
         },
     ];
 
-    // Conteúdo do Menu lateral
     const renderSidebarContent = (isMobile = false) => {
-        // Para ter certeza que a seção 'orders' ou 'favorites' está ativa
         const currentActiveSection = activeSection;
-
         return (
             <div className="h-full">
-                {/* TOP USER SECTION */}
                 <div
                     className={`flex flex-col items-start gap-4 mb-6 pb-6 border-b ${isMobile ? "p-4 pt-8" : "p-6 pt-8"}`}
                 >
@@ -431,13 +469,10 @@ export function UserProfilePage({ onBack }) {
                                     ? user.name.charAt(0).toUpperCase()
                                     : "C"}
                             </div>
-                            <div className="absolute bottom-0 right-0 size-5 rounded-full bg-purple-500 flex items-center justify-center text-xs text-white">
-                                P
-                            </div>
                         </div>
                         <div>
                             <p className="font-semibold text-lg">
-                                {user?.name || "CÉLIO"}
+                                {user?.name || "CLIENTE"}
                             </p>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <span className="font-bold text-primary">
@@ -448,21 +483,17 @@ export function UserProfilePage({ onBack }) {
                         </div>
                     </div>
                 </div>
-
-                {/* NAVIGATION LINKS SECTION */}
                 <div className="px-6 pb-6">
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-4 px-3">
                         Minha Conta
                     </h3>
                     <nav className="space-y-1">
                         {menuItems.map((item) => {
-                            // Lógica de Ativação: Ativa o item se o ID corresponder ou se estiver em uma das sub-páginas do 'profile'
                             const isActive =
                                 currentActiveSection === item.id ||
                                 (currentActiveSection !== "orders" &&
                                     currentActiveSection !== "favorites" &&
                                     item.id === "profile");
-
                             return (
                                 <div key={item.id}>
                                     <button
@@ -505,7 +536,6 @@ export function UserProfilePage({ onBack }) {
                         >
                             <ChevronLeft className="h-5 w-5" />
                         </Button>
-
                         <div className="flex items-center gap-2 flex-1 justify-center min-w-0">
                             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Crown className="h-4 w-4 text-primary-foreground" />
@@ -514,7 +544,6 @@ export function UserProfilePage({ onBack }) {
                                 Minha Conta
                             </h1>
                         </div>
-
                         <Button
                             variant="ghost"
                             size="sm"
@@ -529,12 +558,9 @@ export function UserProfilePage({ onBack }) {
 
             <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
                 <div className="flex flex-col md:flex-row gap-6 md:gap-6">
-                    {/* Sidebar - Desktop */}
                     <aside className="w-full md:w-72 md:flex-shrink-0 hidden md:block bg-white rounded-2xl shadow-sm border">
                         {renderSidebarContent(false)}
                     </aside>
-
-                    {/* Sidebar - Mobile (Overlay) */}
                     <Sheet
                         open={isMobileMenuOpen}
                         onOpenChange={setIsMobileMenuOpen}
@@ -543,8 +569,6 @@ export function UserProfilePage({ onBack }) {
                             {renderSidebarContent(true)}
                         </SheetContent>
                     </Sheet>
-
-                    {/* Main Content */}
                     <main className="flex-1 min-w-0">
                         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border">
                             <RenderMainContent
@@ -559,7 +583,7 @@ export function UserProfilePage({ onBack }) {
                 </div>
             </div>
 
-            {/* MODAL DE EDIÇÃO (DIALOG) */}
+            {/* MODAL DE EDIÇÃO */}
             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
@@ -568,7 +592,6 @@ export function UserProfilePage({ onBack }) {
                             Faça as alterações necessárias e clique em salvar.
                         </DialogDescription>
                     </DialogHeader>
-
                     <div className="grid gap-4 py-4">
                         <div className="grid w-full gap-2">
                             <Label htmlFor="edit-input">
@@ -582,7 +605,6 @@ export function UserProfilePage({ onBack }) {
                             />
                         </div>
                     </div>
-
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button variant="outline" type="button">

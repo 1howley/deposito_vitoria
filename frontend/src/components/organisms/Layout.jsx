@@ -13,21 +13,20 @@ export function Layout() {
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-    // --- LÓGICA DO CARRINHO PADRONIZADA ---
-
     const addToCart = (product) => {
-        // 1. Normalização: O ID oficial do item será o productId (do banco) ou o id (se já vier formatado)
         const safeId = product.productId || product.id;
-
-        if (!safeId) {
-            console.error("Produto sem ID detectado:", product);
-            toast.error("Erro ao adicionar produto: ID inválido");
-            return;
-        }
+        if (!safeId) return;
 
         setCartItems((prev) => {
-            // Buscamos pelo ID normalizado
             const existingItem = prev.find((item) => item.id === safeId);
+            // Verifica estoque atual do item no carrinho
+            const currentQtyInCart = existingItem ? existingItem.quantity : 0;
+
+            // Se tentar adicionar mais que o estoque, bloqueia e avisa
+            if (currentQtyInCart + 1 > product.stock) {
+                toast.error(`Estoque máximo atingido para ${product.name}`);
+                return prev;
+            }
 
             if (existingItem) {
                 toast.success(`Quantidade atualizada: ${product.name}`);
@@ -38,13 +37,12 @@ export function Layout() {
                 );
             } else {
                 toast.success(`Adicionado ao carrinho: ${product.name}`);
-                // IMPORTANTE: Salvamos no estado garantindo que 'id' existe e é igual ao 'productId'
                 return [
                     ...prev,
                     {
                         ...product,
-                        id: safeId, // Garante consistência para o front
-                        productId: safeId, // Mantém referência para o back
+                        id: safeId,
+                        productId: safeId,
                         quantity: 1,
                     },
                 ];
@@ -58,7 +56,13 @@ export function Layout() {
             return;
         }
 
-        // Como garantimos o 'id' no addToCart, a busca aqui fica simples
+        // Verifica estoque antes de aumentar
+        const item = cartItems.find((i) => i.id === targetId);
+        if (item && quantity > item.stock) {
+            toast.error("Limite de estoque atingido");
+            return;
+        }
+
         setCartItems((prev) =>
             prev.map((item) =>
                 item.id === targetId ? { ...item, quantity } : item
@@ -72,8 +76,8 @@ export function Layout() {
     };
 
     const handleCheckout = () => {
-        toast.success("Redirecionando para finalização da compra...");
-        // navigate('/checkout');
+        setIsCartOpen(false);
+        navigate("/checkout");
     };
 
     const clearCart = () => {
@@ -95,13 +99,10 @@ export function Layout() {
                 cartCount={cartCount}
                 onCartClick={() => setIsCartOpen(true)}
             />
-
             <main>
                 <Outlet context={contextProps} />
             </main>
-
             <Footer />
-
             <ShoppingCart
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}
@@ -110,7 +111,6 @@ export function Layout() {
                 onRemoveItem={removeFromCart}
                 onCheckout={handleCheckout}
             />
-
             <WhatsAppFloat />
         </div>
     );

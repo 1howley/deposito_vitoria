@@ -1,15 +1,13 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { OrderService } from "../services/OrderService.js";
 import prismaClient from "../prisma/index.js";
-import {
-    SearchPaginationSchema,
-} from "../dtos/product/PaginationDTO.js";
+import { SearchPaginationSchema } from "../dtos/product/PaginationDTO.js";
 import type { CreateOrderDTO } from "../dtos/order/CreateOrderDTO.js";
+import type { Prisma } from "@prisma/client";
 
-// CORREÇÃO 1: Ajustando a interface para bater com o erro do Fastify/JWT
-// O erro dizia que faltava userId e email.
+// Interface para Request autenticado
 interface AuthenticatedRequest extends FastifyRequest {
-    user: {
+    user?: {
         userId: string;
         email: string;
         role: "ADMIN" | "CUSTOMER";
@@ -19,44 +17,37 @@ interface AuthenticatedRequest extends FastifyRequest {
 export class OrderController {
     private orderService = new OrderService();
 
-    async createOrder(req: AuthenticatedRequest, reply: FastifyReply) {
+    // ============================================================
+    // CORREÇÃO: Todos os métodos agora são Arrow Functions (= async () => {})
+    // Isso garante que 'this.orderService' esteja sempre disponível.
+    // ============================================================
+
+    createOrder = async (req: AuthenticatedRequest, reply: FastifyReply) => {
         try {
-            // CORREÇÃO: Pegando userId da tipagem correta
             const userId = req.user?.userId;
 
             if (!userId) {
-                return reply
-                    .code(401)
-                    .send({
-                        message: "Usuário não autenticado. O Middleware falhou",
-                    });
+                return reply.code(401).send({ message: "Usuário não autenticado." });
             }
 
-            // CORREÇÃO: Usando o DTO novo que criamos para o checkout
             const orderData = req.body as CreateOrderDTO;
-
             const order = await this.orderService.createOrder(userId, orderData);
 
             reply.code(201).send(order);
         } catch (error: any) {
-            const isLogicError =
-                error.message.includes("Estoque") ||
-                error.message.includes("carrinho");
-            const statusCode = isLogicError ? 400 : 500;
-
-            reply.code(statusCode).send({ message: error.message });
+            // Verifica erros de negócio para retornar 400 em vez de 500
+            const isLogicError = error.message.includes("Estoque") || error.message.includes("carrinho");
+            reply.code(isLogicError ? 400 : 500).send({ message: error.message });
         }
-    }
+    };
 
-    async listUserOrders(userId: string) { // Mudado para string conforme schema
+    // Método auxiliar para listar pedidos de um usuário específico
+    // (Pode ser movido para o Service futuramente, mas mantemos aqui para não quebrar a lógica anterior)
+    listUserOrders = async (userId: string) => {
         return prismaClient.order.findMany({
-            where: { 
-                // CORREÇÃO 2: No seu schema o campo é 'clientId', não 'userId'
-                clientId: userId 
-            },
+            where: { clientId: userId },
             orderBy: { createdAt: "desc" },
             include: {
-                // CORREÇÃO 3: No seu schema a relação é 'items', não 'OrderItem'
                 items: {
                     include: {
                         product: true,
@@ -64,9 +55,9 @@ export class OrderController {
                 },
             },
         });
-    }
+    };
 
-    async listMyOrders(req: AuthenticatedRequest, reply: FastifyReply) {
+    listMyOrders = async (req: AuthenticatedRequest, reply: FastifyReply) => {
         try {
             const userId = req.user?.userId;
             
@@ -74,16 +65,15 @@ export class OrderController {
                 return reply.code(401).send({ message: "Usuário não autenticado." });
             }
 
-            // Reutilizando a lógica corrigida acima
             const orders = await this.listUserOrders(userId);
             
             reply.code(200).send(orders);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
-    }
+    };
 
-    async getAllOrders(req: AuthenticatedRequest, reply: FastifyReply) {
+    getAllOrders = async (req: FastifyRequest, reply: FastifyReply) => {
         try {
             const validationResult = SearchPaginationSchema.safeParse(req.query);
 
@@ -96,22 +86,23 @@ export class OrderController {
 
             const { page, limit } = validationResult.data;
             const skip = (page - 1) * limit;
+            
+            // AQUI OCORRIA O ERRO: 'this.orderService' era undefined
             const result = await this.orderService.getAllOrders(skip, limit);
 
             reply.status(200).send(result);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
-    }
+    };
 
-    async getOrderById(
+    getOrderById = async (
         req: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply
-    ) {
+    ) => {
         try {
-            const order = await this.orderService.getOrderById(
-                parseInt(req.params.id, 10)
-            );
+            const orderId = parseInt(req.params.id, 10);
+            const order = await this.orderService.getOrderById(orderId);
             if (order) {
                 reply.code(200).send(order);
             } else {
@@ -120,51 +111,46 @@ export class OrderController {
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
-    }
+    };
 
-    async updateStatus(
+    // Este método atende tanto updates gerais quanto atualização de status
+    updateOrder = async (
         req: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply
-    ) {
+    ) => {
         try {
             const orderId = parseInt(req.params.id, 10);
-            const { status } = req.body as { status: string };
-            const updatedOrder = await this.orderService.updateOrderStatus(
-                orderId,
-                status
-            );
+            const updateData = req.body as Prisma.OrderUpdateInput;
+            
+            // Se for apenas status, podemos usar a lógica específica do service se preferir,
+            // mas o updateOrder genérico do service já deve lidar com isso.
+            // Se você tiver uma lógica especial para status (como restaurar estoque ao cancelar),
+            // verifique se o Service trata isso ou chame updateOrderStatus aqui.
+            
+            let order;
+            // Se o payload tiver 'status', usamos o método específico que trata estoque
+            if (req.body && (req.body as any).status) {
+                 const status = (req.body as any).status;
+                 order = await this.orderService.updateOrderStatus(orderId, status);
+            } else {
+                 order = await this.orderService.updateOrder(orderId, updateData);
+            }
 
-            reply.code(200).send(updatedOrder);
-        } catch (error: any) {
-            const statusCode = error.message.incluides("not found") ? 400 : 500;
-            reply.code(statusCode).send({ message: error.message });
-        }
-    }
-
-    async updateOrder(
-        req: FastifyRequest<{ Params: { id: string } }>,
-        reply: FastifyReply
-    ) {
-        try {
-            const order = await this.orderService.updateOrder(
-                parseInt(req.params.id, 10),
-                req.body as any
-            );
             reply.code(200).send(order);
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
-    }
+    };
 
-    async deleteOrder(
+    deleteOrder = async (
         req: FastifyRequest<{ Params: { id: string } }>,
         reply: FastifyReply
-    ) {
+    ) => {
         try {
             await this.orderService.deleteOrder(parseInt(req.params.id, 10));
             reply.code(204).send();
         } catch (error: any) {
             reply.code(500).send({ message: error.message });
         }
-    }
+    };
 }

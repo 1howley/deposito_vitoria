@@ -8,11 +8,18 @@ import { PaymentRoute } from "./routes/PaymentRoute.js";
 import { OrderRoute } from "./routes/OrderRoute.js";
 import { OrderItemRoute } from "./routes/OrderItemRoute.js";
 import { CartItemRoute } from "./routes/CartItemRoute.js";
+import { WebhookRoute } from "./routes/WebhookRoute.js";
 
 const server = Fastify({ logger: true });
 
 const startServer = async () => {
-    await server.register(cors);
+
+    await server.register(cors, {
+        origin: true, // Permite todas as origens (em dev)
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    });
+
     await server.register(UserRoute, { prefix: "users" });
     await server.register(ProductRoute, { prefix: "products" });
     await server.register(AddressRoute, { prefix: "addresses" });
@@ -21,6 +28,7 @@ const startServer = async () => {
     await server.register(OrderRoute, { prefix: "orders" });
     await server.register(OrderItemRoute, { prefix: "order-items" });
     await server.register(CartItemRoute, { prefix: "cart-items" });
+    await server.register(WebhookRoute, { prefix: "webhooks" });
 
     try {
         await server.listen({
