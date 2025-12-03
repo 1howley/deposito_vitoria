@@ -13,68 +13,67 @@ export function ProductCard({ product, onAddToCart }) {
         }).format(price);
     };
 
+    // Substitua o return do seu ProductCard por este:
     return (
-        <Card className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-0 bg-white rounded-2xl">
-            <CardContent className="p-0">
+        <Card className="group hover:shadow-2xl transition-all duration-500 overflow-hidden border-0 bg-white rounded-2xl flex flex-col h-full">
+            <CardContent className="p-0 flex-1">
                 <div className="relative overflow-hidden">
                     <ImageWithFallback
-                        src={product.image} // This will be undefined for API products, triggering fallback
-                        fallbackSrc="src/assets/loguinho.jpg" // Specific fallback image
+                        src={product.image}
+                        fallbackSrc="src/assets/loguinho.jpg"
                         alt={product.name}
-                        className="w-full h-48 md:h-56 object-cover group-hover:scale-110 transition-transform duration-700"
+                        // Mudança: height ajustada para mobile para não ocupar a tela toda
+                        className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-700 md:group-hover:scale-110"
                     />
 
                     {product.stock <= 0 && (
                         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
                             <Badge
                                 variant="destructive"
-                                className="text-sm md:text-lg px-3 md:px-4 py-1 md:py-2"
+                                className="text-xs md:text-lg px-2 py-1 md:px-4 md:py-2"
                             >
                                 Indisponível
                             </Badge>
                         </div>
                     )}
-
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
 
-                <div className="p-4 md:p-6">
-                    <Badge variant="outline" className="mb-2 md:mb-3 text-xs">
+                <div className="p-3 md:p-6 flex flex-col gap-2">
+                    <Badge
+                        variant="outline"
+                        className="w-fit text-[10px] md:text-xs"
+                    >
                         {product.category || "Sem Categoria"}
                     </Badge>
 
-                    <h3 className="font-bold mb-2 md:mb-3 line-clamp-2 text-base md:text-lg group-hover:text-primary transition-colors">
+                    <h3 className="font-bold text-sm md:text-lg line-clamp-2 group-hover:text-primary transition-colors min-h-[2.5rem]">
                         {product.name}
                     </h3>
 
-                    <p className="text-muted-foreground text-xs md:text-sm mb-3 md:mb-4 line-clamp-2 leading-relaxed">
+                    {/* Descrição escondida em telas muito pequenas para limpar o layout */}
+                    <p className="hidden xs:block text-muted-foreground text-xs md:text-sm line-clamp-2 leading-relaxed">
                         {product.description}
                     </p>
 
-                    <div className="flex items-baseline gap-2 md:gap-3 mb-3 md:mb-4">
-                        <span className="text-lg md:text-2xl font-bold text-primary">
+                    <div className="mt-auto pt-2">
+                        <span className="text-base md:text-2xl font-bold text-primary">
                             {formatPrice(product.basePrice)}
                         </span>
                     </div>
                 </div>
             </CardContent>
 
-            <CardFooter className="p-4 md:p-6 pt-0">
+            <CardFooter className="p-3 md:p-6 pt-0">
                 <Button
                     onClick={() => onAddToCart(product)}
                     disabled={product.stock <= 0}
-                    className="w-full h-10 md:h-12 rounded-xl font-semibold group-hover:scale-105 transition-transform text-sm md:text-base"
-                    size="lg"
+                    className="w-full h-9 md:h-12 rounded-xl font-semibold md:group-hover:scale-105 transition-transform text-xs md:text-base"
+                    size="default" // Mudado de 'lg' fixo para se adaptar
                 >
-                    <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                    <span className="hidden sm:inline">
-                        {product.stock > 0
-                            ? "Adicionar ao Carrinho"
-                            : "Indisponível"}
-                    </span>
-                    <span className="sm:hidden">
-                        {product.stock > 0 ? "Adicionar" : "Indisponível"}
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    {/* Texto visível também no mobile se houver espaço, ou apenas 'Comprar' */}
+                    <span className="inline">
+                        {product.stock > 0 ? "Comprar" : "Indisponível"}
                     </span>
                 </Button>
             </CardFooter>

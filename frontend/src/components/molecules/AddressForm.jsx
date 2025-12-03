@@ -7,14 +7,14 @@ export function AddressForm({ deliveryInfo, onChange }) {
     return (
         <div className="space-y-6">
             {/* Dados Pessoais */}
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                         <span className="font-semibold text-primary">1</span>
                     </div>
-                    <h2 className="text-xl">Dados Pessoais</h2>
+                    <h2 className="text-xl font-semibold">Dados Pessoais</h2>
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
                         <Label htmlFor="name">Nome Completo *</Label>
                         <Input
@@ -43,7 +43,6 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             placeholder="(00) 00000-0000"
                         />
                     </div>
-                    {/* DICA: Para gateways de pagamento no Brasil, adicione CPF aqui */}
                     <div className="md:col-span-2">
                         <Label htmlFor="document">
                             CPF (Necessário para PIX/Boleto) *
@@ -61,16 +60,19 @@ export function AddressForm({ deliveryInfo, onChange }) {
             </Card>
 
             {/* Endereço */}
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
                         <Truck className="h-5 w-5 text-primary" />
                     </div>
-                    <h2 className="text-xl">Endereço de Entrega</h2>
+                    <h2 className="text-xl font-semibold">
+                        Endereço de Entrega
+                    </h2>
                 </div>
-                <div className="grid md:grid-cols-4 gap-4">
-                    {/* ... Inputs de endereço (CEP, Rua, Número, etc) mantendo a mesma lógica ... */}
-                    <div className="md:col-span-1">
+
+                {/* GRID RESPONSIVO AJUSTADO */}
+                <div className="grid grid-cols-4 gap-3 md:gap-4">
+                    <div className="col-span-4 md:col-span-1">
                         <Label htmlFor="zipCode">CEP *</Label>
                         <Input
                             id="zipCode"
@@ -81,7 +83,7 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             placeholder="00000-000"
                         />
                     </div>
-                    <div className="md:col-span-3">
+                    <div className="col-span-4 md:col-span-3">
                         <Label htmlFor="address">Endereço *</Label>
                         <Input
                             id="address"
@@ -91,7 +93,9 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             }
                         />
                     </div>
-                    <div className="md:col-span-1">
+
+                    {/* Número e Complemento lado a lado no mobile */}
+                    <div className="col-span-2 md:col-span-1">
                         <Label htmlFor="number">Número *</Label>
                         <Input
                             id="number"
@@ -99,7 +103,7 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             onChange={(e) => onChange("number", e.target.value)}
                         />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="col-span-2 md:col-span-1">
                         <Label htmlFor="complement">Complemento</Label>
                         <Input
                             id="complement"
@@ -109,7 +113,8 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             }
                         />
                     </div>
-                    <div className="md:col-span-2">
+
+                    <div className="col-span-4 md:col-span-2">
                         <Label htmlFor="neighborhood">Bairro *</Label>
                         <Input
                             id="neighborhood"
@@ -119,7 +124,9 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             }
                         />
                     </div>
-                    <div className="md:col-span-3">
+
+                    {/* Cidade e Estado lado a lado no mobile */}
+                    <div className="col-span-3">
                         <Label htmlFor="city">Cidade *</Label>
                         <Input
                             id="city"
@@ -127,8 +134,8 @@ export function AddressForm({ deliveryInfo, onChange }) {
                             onChange={(e) => onChange("city", e.target.value)}
                         />
                     </div>
-                    <div className="md:col-span-1">
-                        <Label htmlFor="state">Estado *</Label>
+                    <div className="col-span-1">
+                        <Label htmlFor="state">UF *</Label>
                         <Input
                             id="state"
                             value={deliveryInfo.state}
