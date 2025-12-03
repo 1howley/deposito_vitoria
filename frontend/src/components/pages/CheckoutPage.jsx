@@ -112,7 +112,6 @@ export function CheckoutPage() {
                         : "PIX",
             };
 
-            console.log(token);
             const data = await OrderService.create(orderPayload, token);
 
             const { paymentUrl } = data;

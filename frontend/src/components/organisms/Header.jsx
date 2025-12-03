@@ -19,7 +19,7 @@ export function Header({ cartCount, onCartClick }) {
     const [searchValue, setSearchValue] = useState("");
 
     const { user } = useAuth();
-    console.log(user);
+
     const toggleMenu = () => {
         setIsMenuOpen((prevState) => !prevState);
     };

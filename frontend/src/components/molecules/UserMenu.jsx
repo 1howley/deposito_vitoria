@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 const UserMenu = React.forwardRef((props, ref) => {
     const { user } = useAuth();
-    console.log("Current User in UserMenu:", user);
+
     const navigate = useNavigate();
 
     if (!props.isOpen) {

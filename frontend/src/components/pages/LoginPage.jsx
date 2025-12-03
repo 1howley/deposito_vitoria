@@ -52,7 +52,7 @@ export function LoginPage() {
 
         try {
             const data = await setUser(userDataForBackend);
-            console.log("Usuário sincronizado com o backend:", data);
+            //console.log("Usuário sincronizado com o backend:", data);
             return true;
         } catch (error) {
             console.error("Falha ao sincronizar usuário com o backend:", error);
