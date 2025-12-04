@@ -10,7 +10,8 @@ const JWT_EXPIRES_IN = "1d";
 // Lista de e-mails que serão ADMIN automaticamente
 const ADMIN_EMAILS = [
     "bielgabrielfs61@gmail.com",
-    "celiohenrique3434@gmail.com"
+    "celiohenrique3434@gmail.com",
+    "rafaelabatista1605@gmail.com"
 ];
 
 export class UserService {
