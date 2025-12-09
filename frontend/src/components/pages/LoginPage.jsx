@@ -46,7 +46,6 @@ export function LoginPage() {
             userId: firebaseUser.uid,
             email: firebaseUser.email,
             name: firebaseUser.displayName || extraData.name,
-            // Pega o nome do Google ou do formulário
             authProvider: provider, // 'google' or 'email'
         };
 

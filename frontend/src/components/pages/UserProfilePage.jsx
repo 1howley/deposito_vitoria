@@ -11,10 +11,11 @@ import {
     Crown,
     Menu,
     ChevronRight,
-    LogOut, // Importei o ícone de logout
+    LogOut,
 } from "lucide-react";
 import { Button } from "../atoms/button";
-import { Sheet, SheetContent } from "../atoms/sheet";
+// Import atualizado para incluir Title, Description e Header
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "../atoms/sheet";
 import {
     Dialog,
     DialogContent,
@@ -28,15 +29,19 @@ import { Input } from "../atoms/input";
 import { Label } from "../atoms/label";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "sonner";
-import { useSearchParams, useNavigate } from "react-router"; // Importei useNavigate
+import { useSearchParams, useNavigate } from "react-router";
 import { OrderService } from "../../services/orders/OrderService";
-import { signOut } from "firebase/auth"; // Import para logout
-import { auth } from "../../config/firebase"; // Import auth do firebase
+import { signOut } from "firebase/auth";
+import { auth } from "../../config/firebase";
+
+// ... (Mantenha os componentes OrdersSection e RenderMainContent como estão, sem alterações) ...
+// Para brevidade, vou focar apenas na alteração dentro do componente principal UserProfilePage
 
 // ==========================================
-// 1. COMPONENTE: OrdersSection
+// 1. COMPONENTE: OrdersSection (Sem alterações)
 // ==========================================
 function OrdersSection({ onBack }) {
+    // ... (mesmo código original) ...
     const { firebaseUser } = useAuth();
     const [myOrders, setMyOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(true);
@@ -179,7 +184,7 @@ function OrdersSection({ onBack }) {
 }
 
 // ==========================================
-// 2. RenderMainContent (Logica de navegação)
+// 2. RenderMainContent (Sem alterações)
 // ==========================================
 const RenderMainContent = ({
     activeSection,
@@ -370,7 +375,7 @@ const RenderMainContent = ({
 };
 
 // ==========================================
-// 3. UserProfilePage (Principal)
+// 3. UserProfilePage (Alterado)
 // ==========================================
 export function UserProfilePage({ onBack }) {
     const { user } = useAuth();
@@ -529,7 +534,6 @@ export function UserProfilePage({ onBack }) {
                     </nav>
                 </div>
 
-                {/* BOTÃO DE LOGOUT ADICIONADO AQUI */}
                 <div className="p-6 border-t mt-auto">
                     <button
                         onClick={handleLogout}
@@ -590,6 +594,13 @@ export function UserProfilePage({ onBack }) {
                         onOpenChange={setIsMobileMenuOpen}
                     >
                         <SheetContent side="left" className="p-0 w-72 pt-0">
+                            {/* Adicionado Header com classe sr-only para acessibilidade */}
+                            <SheetHeader className="sr-only">
+                                <SheetTitle>Menu de Perfil</SheetTitle>
+                                <SheetDescription>
+                                    Navegação para opções da conta do usuário
+                                </SheetDescription>
+                            </SheetHeader>
                             {renderSidebarContent(true)}
                         </SheetContent>
                     </Sheet>

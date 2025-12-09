@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useOutletContext, useNavigate } from "react-router"; //
 import { ProductCard } from "../molecules/ProductCard";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
@@ -16,12 +17,19 @@ import {
     List,
     ArrowLeft,
     Paintbrush,
-    Loader2, // Importei um ícone de loading
+    Loader2,
 } from "lucide-react";
-// Assumindo que o ProductService está em um arquivo separado, ajuste o caminho conforme necessário
 import { ProductService } from "../../services/products/ProductService";
 
-export function PaintsPage({ onAddToCart, onBack }) {
+export function PaintsPage() { // Removidas as props onAddToCart e onBack
+    // 1. Hook para navegação (substitui onBack)
+    const navigate = useNavigate();
+    const onBack = () => navigate(-1);
+
+    // 2. Recupera função do carrinho do contexto (substitui onAddToCart)
+    const context = useOutletContext();
+    const onAddToCart = context?.addToCart || ((p) => console.error("Erro: addToCart não encontrado", p));
+
     // Estado dos dados
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,12 +48,10 @@ export function PaintsPage({ onAddToCart, onBack }) {
                 setIsLoading(true);
                 const data = await ProductService.getAll();
 
-                // Verifica a estrutura do retorno (algumas APIs retornam array direto, outras um objeto paginado)
                 const allProducts = Array.isArray(data)
                     ? data
                     : data.products || data.items || [];
 
-                // FILTRA APENAS CATEGORIA 'TINTAS' (Conforme solicitado)
                 const tintasOnly = allProducts.filter(
                     (p) => p.category === "Tintas"
                 );
@@ -53,7 +59,6 @@ export function PaintsPage({ onAddToCart, onBack }) {
                 setProducts(tintasOnly);
             } catch (error) {
                 console.error("Erro ao buscar produtos:", error);
-                // Opcional: Adicionar um toast ou estado de erro aqui
             } finally {
                 setIsLoading(false);
             }
@@ -62,7 +67,7 @@ export function PaintsPage({ onAddToCart, onBack }) {
         fetchProducts();
     }, []);
 
-    // Subcategorias (Cálculo dinâmico baseado no estado 'products')
+    // Subcategorias
     const subcategories = [
         { id: "all", name: "Todas", count: products.length },
         {
@@ -91,7 +96,7 @@ export function PaintsPage({ onAddToCart, onBack }) {
         },
     ];
 
-    // Filtrar produtos (Busca, Subcategoria selecionada, Preço)
+    // Filtrar produtos
     const filteredProducts = products.filter((product) => {
         const matchesSearch =
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,7 +110,7 @@ export function PaintsPage({ onAddToCart, onBack }) {
             product.subcategory === selectedSubcategory;
 
         let matchesPrice = true;
-        const price = Number(product.price); // Garantir que é número
+        const price = Number(product.price);
 
         if (priceRange === "under50") matchesPrice = price < 50;
         if (priceRange === "50to150")
@@ -179,7 +184,6 @@ export function PaintsPage({ onAddToCart, onBack }) {
             </div>
 
             <div className="container mx-auto px-4 py-6">
-                {/* Renderização Condicional: Loading ou Conteúdo */}
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />

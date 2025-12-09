@@ -8,7 +8,8 @@ export const UpdateProductSchema = z.object({
 
     description: z.string().optional(),
 
-    price: z
+    // CORREÇÃO 1: Alterado de 'price' para 'basePrice' para bater com o banco
+    basePrice: z
         .number({
             error: "O preço deve ser um número.",
         })
@@ -23,7 +24,10 @@ export const UpdateProductSchema = z.object({
         .min(0, "O estoque não pode ser negativo")
         .optional(),
 
-    categoryId: z.number().int().optional(),
+    brand: z.string().optional(),
+
+    // CORREÇÃO 2: Alterado de 'categoryId' (number) para 'category' (string)
+    category: z.string().optional(),
 });
 
 export type UpdateProductDTO = z.infer<typeof UpdateProductSchema>;
