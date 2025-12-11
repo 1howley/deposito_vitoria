@@ -7,8 +7,8 @@ export const ProductService = {
         });
         return response.data;
     },
-    getAll: async () => {
-        const response = await api.get("/products?page=1&limit=100"); // Aumentei o limite para admin ver tudo
+    getAll: async (page = 1, limit = 10) => {
+        const response = await api.get(`/products?page=${page}&limit=${limit}`);
         return response.data;
     },
     getById: async (id) => {

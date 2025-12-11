@@ -23,7 +23,7 @@ export function Footer() {
                         </h3>
                         <p className="text-muted-foreground mb-4">
                             Sua loja de materiais de construção de confiança em
-                            Cajuru. Qualidade e tradição há mais de 20 anos.
+                            Cajuru. Qualidade e tradição há mais de 10 anos.
                         </p>
 
                         <SocialButtons />

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ShoppingCart, Menu, Search, X ,ShoppingBag} from "lucide-react";
+import { ShoppingCart, Menu, Search, X, ShoppingBag } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
@@ -57,10 +57,8 @@ export function Header({ cartCount, onCartClick }) {
                 3. Aumentei o padding lateral em telas grandes ('md:px-8 lg:px-12') para ficar nos cantos, mas bonito.
             */}
             <div className="w-full px-4 md:px-8 lg:px-36 py-4 md:py-6">
-                
                 {/* Linha Superior: Logo, Busca, Carrinho */}
                 <div className="flex items-center justify-between gap-4">
-                    
                     {/* Lado Esquerdo: Logo */}
                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 w-auto md:w-64">
                         <Link to="/">
@@ -109,7 +107,7 @@ export function Header({ cartCount, onCartClick }) {
                                 </Button>
                             </Link>
                         )}
-                        
+
                         {user && (
                             <div className="relative hidden md:flex">
                                 <Button
@@ -146,7 +144,9 @@ export function Header({ cartCount, onCartClick }) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            onClick={() =>
+                                setIsMobileMenuOpen(!isMobileMenuOpen)
+                            }
                             className="md:hidden h-10 w-10 p-0"
                         >
                             {isMobileMenuOpen ? (
@@ -223,14 +223,19 @@ export function Header({ cartCount, onCartClick }) {
                                 {[
                                     { to: "/catalog", label: "Catálogo" },
                                     { to: "/sale", label: "Ofertas" },
-                                    { to: "/basics", label: "Materiais Básicos" },
+                                    {
+                                        to: "/basics",
+                                        label: "Materiais Básicos",
+                                    },
                                     { to: "/tools", label: "Ferramentas" },
                                     { to: "/paints", label: "Tintas" },
                                 ].map((link) => (
                                     <li key={link.to}>
                                         <Link
                                             to={link.to}
-                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
                                             className="block py-3 px-4 text-foreground hover:text-primary font-medium rounded-xl hover:bg-white transition-colors"
                                         >
                                             {link.label}
@@ -247,7 +252,9 @@ export function Header({ cartCount, onCartClick }) {
                                         <li>
                                             <Link
                                                 to="/profile"
-                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
                                                 className="flex items-center py-3 px-4 text-foreground hover:bg-white rounded-xl"
                                             >
                                                 <FaUser className="mr-3 h-4 w-4 text-primary" />
@@ -257,7 +264,9 @@ export function Header({ cartCount, onCartClick }) {
                                         <li>
                                             <Link
                                                 to="/profile?section=orders"
-                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
                                                 className="flex items-center py-3 px-4 text-foreground hover:bg-white rounded-xl"
                                             >
                                                 <ShoppingBag className="mr-3 h-4 w-4 text-primary" />
@@ -272,7 +281,11 @@ export function Header({ cartCount, onCartClick }) {
                                                 <li>
                                                     <Link
                                                         to="/add-product"
-                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        onClick={() =>
+                                                            setIsMobileMenuOpen(
+                                                                false
+                                                            )
+                                                        }
                                                         className="block py-3 px-4 text-red-600 hover:bg-red-50 rounded-xl font-medium"
                                                     >
                                                         Adicionar Produto
@@ -281,7 +294,11 @@ export function Header({ cartCount, onCartClick }) {
                                                 <li>
                                                     <Link
                                                         to="/admin/orders"
-                                                        onClick={() => setIsMobileMenuOpen(false)}
+                                                        onClick={() =>
+                                                            setIsMobileMenuOpen(
+                                                                false
+                                                            )
+                                                        }
                                                         className="block py-3 px-4 text-red-600 hover:bg-red-50 rounded-xl font-medium"
                                                     >
                                                         Gestão de Pedidos
@@ -296,7 +313,9 @@ export function Header({ cartCount, onCartClick }) {
                                         <li>
                                             <Link
                                                 to="/login"
-                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
                                                 className="block py-3 px-4 text-center bg-primary text-white font-bold rounded-xl shadow-sm hover:bg-primary/90"
                                             >
                                                 Fazer Login / Cadastrar

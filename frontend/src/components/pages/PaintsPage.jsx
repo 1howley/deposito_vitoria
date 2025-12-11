@@ -21,14 +21,17 @@ import {
 } from "lucide-react";
 import { ProductService } from "../../services/products/ProductService";
 
-export function PaintsPage() { // Removidas as props onAddToCart e onBack
+export function PaintsPage() {
+    // Removidas as props onAddToCart e onBack
     // 1. Hook para navegação (substitui onBack)
     const navigate = useNavigate();
     const onBack = () => navigate(-1);
 
     // 2. Recupera função do carrinho do contexto (substitui onAddToCart)
     const context = useOutletContext();
-    const onAddToCart = context?.addToCart || ((p) => console.error("Erro: addToCart não encontrado", p));
+    const onAddToCart =
+        context?.addToCart ||
+        ((p) => console.error("Erro: addToCart não encontrado", p));
 
     // Estado dos dados
     const [products, setProducts] = useState([]);
