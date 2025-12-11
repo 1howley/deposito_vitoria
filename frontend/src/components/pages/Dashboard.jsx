@@ -57,7 +57,7 @@ export function Dashboard() {
     // --- MUDANÇA AQUI: Roteamento para páginas específicas ---
     const handleCategoryClick = (categoryId) => {
         const category = categories.find((c) => c.id === categoryId);
-        
+
         if (!category) return;
 
         // Normalizamos o nome para facilitar a comparação (minúsculas)
@@ -71,7 +71,7 @@ export function Dashboard() {
         } else if (name.includes("básicos") || name.includes("basicos")) {
             navigate("/basics");
         } else {
-            // Se for uma categoria nova que não tem página própria, 
+            // Se for uma categoria nova que não tem página própria,
             // manda para o catálogo filtrado como fallback
             navigate("/catalog", { state: { category: category.name } });
         }

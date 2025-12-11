@@ -23,6 +23,11 @@ export function AdminProductsPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
+    
+    // Estados de Paginação
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const initialForm = {
         name: "",
@@ -37,8 +42,14 @@ export function AdminProductsPage() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const data = await ProductService.getAll();
+            const data = await ProductService.getAll(page, ITEMS_PER_PAGE);
+
             setProducts(data.products || []);
+
+            // Atualiza o total de páginas vindo do backend
+            if (data.meta) {
+                setTotalPages(data.meta.totalPages);
+            }
         } catch (error) {
             toast.error("Erro ao carregar produtos: " + error);
         } finally {
@@ -46,9 +57,10 @@ export function AdminProductsPage() {
         }
     };
 
+    // Recarrega quando muda o usuário ou a página
     useEffect(() => {
         if (user?.role === "ADMIN") fetchProducts();
-    }, [user]);
+    }, [user, page]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -303,6 +315,33 @@ export function AdminProductsPage() {
                                 </TableBody>
                             </Table>
                         </div>
+
+                        {/* --- PAGINAÇÃO ADICIONADA AQUI --- */}
+                        <div className="flex items-center justify-end gap-4 mt-4 border-t pt-4">
+                            <span className="text-sm text-gray-500">
+                                Página {page} de {totalPages || 1}
+                            </span>
+                            
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setPage((old) => Math.max(old - 1, 1))}
+                                    disabled={page === 1}
+                                >
+                                    Anterior
+                                </Button>
+                                
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setPage((old) => Math.min(old + 1, totalPages))}
+                                    disabled={page === totalPages || totalPages === 0}
+                                >
+                                    Próxima
+                                </Button>
+                            </div>
+                        </div>
+                        {/* ---------------------------------- */}
+
                     </CardContent>
                 </Card>
             </div>

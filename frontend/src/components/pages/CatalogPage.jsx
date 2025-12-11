@@ -15,7 +15,7 @@ import { Search, Grid, List, ArrowLeft } from "lucide-react";
 import { ProductService } from "../../services/products/ProductService";
 import { Skeleton } from "../atoms/skeleton";
 import { ImageWithFallback } from "../atoms/ImageWithFallback";
-import loguinhoImg from '../../assets/loguinho.jpg'
+import loguinhoImg from "../../assets/loguinho.jpg";
 
 export function CatalogPage() {
     const context = useOutletContext();
@@ -27,8 +27,10 @@ export function CatalogPage() {
     const location = useLocation();
 
     // --- MUDANÇA AQUI: Inicializa com a categoria vinda do Dashboard, se houver ---
-    const [selectedCategory, setSelectedCategory] = useState(location.state?.category || "all");
-    
+    const [selectedCategory, setSelectedCategory] = useState(
+        location.state?.category || "all"
+    );
+
     // Inicializa o termo de busca com o que veio do Header (se houver)
     const [searchTerm, setSearchTerm] = useState(location.state?.search || "");
     const [sortBy, setSortBy] = useState("name");

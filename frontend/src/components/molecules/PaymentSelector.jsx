@@ -13,7 +13,7 @@ export function PaymentSelector({ selectedMethod, onSelect }) {
         // Removido objeto do "card"
         // Removido objeto do "boleto"
     ];
-    
+
     return (
         <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
